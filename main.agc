@@ -99,7 +99,6 @@ do
 			if (spriteReleased > 0 and spriteReleased = spritePressed)
 				for i = 0 to ui.panels[categoriesPanelIndex].buttons.length
 					if (spritePressed = ui.panels[categoriesPanelIndex].buttons[i].icon)
-						print("got here")
 						if (ui.panels[categoriesPanelIndex].buttons[i].name$ = "Cos/Sin Orbit")
 							selectedCategory = COS_SIN_ORBIT
 							redrawUI = 1
@@ -160,7 +159,6 @@ do
 		endif
 	endif
 	
-	print(redrawUI)
 	UpdateUIListener()
 	
 	for i = 0 to 9

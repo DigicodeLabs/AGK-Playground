@@ -133,8 +133,8 @@ SetSpriteSize(ui.panels[ui.panels.length].verticalScrollBar, 12, 100)
 SetSpriteColor(ui.panels[ui.panels.length].verticalScrollBar, 61, 61, 61, 255)
 SetSpriteDepth(ui.panels[ui.panels.length].verticalScrollBar, 17)
 buttonColors = ["EA3C25", "F09333", "F09333", "FFF24A", "8CC63F"]
-buttonIcons = ["category", "hdr_weak", "waves", "scatter_plot", "play_arrow"]
-buttonLabels = ["2D Physics", "Cos/Sin Orbit", "Sine Wave", "Particles", "Tweens"]
+buttonIcons = ["category", "hdr_weak", "scatter_plot", "waves", "play_arrow"]
+buttonLabels = ["2D Physics", "Cos/Sin Orbit", "Particles", "Sine Wave", "Tweens"]
 for i = 0 to buttonIcons.length
 	ui.panels[ui.panels.length].buttons.insert(blankButton)
 	ui.panels[ui.panels.length].buttons[i].name$ = buttonLabels[i]
@@ -730,8 +730,8 @@ function UpdateUIListener()
 				SetSpriteColor(ui.sliders[slider].inactiveTrack, 61, 57, 60, 255)
 				SetSpriteDepth(ui.sliders[slider].inactiveTrack, GetSpriteDepth(ui.panels[a].background) - 1)
 				SetSpriteSize(ui.sliders[slider].handle, 15, 15)
-				percentage# = (100.0 / 500.0) * ui.sliders[slider].value#
-				handleX# = ((260.0 - GetSpriteWidth(ui.sliders[slider].handle)) / 100.0) * percentage#
+				percentage# = ((ui.sliders[slider].value# - ui.sliders[slider].min#) / (ui.sliders[slider].max# - ui.sliders[slider].min#)) * 100.0
+				handleX# = ((GetSpriteWidth(ui.sliders[slider].inactiveTrack) - GetSpriteWidth(ui.sliders[slider].handle)) / 100.0) * percentage#
 				SetSpritePositionByOffset(ui.sliders[slider].handle, GetSpriteX(ui.sliders[slider].inactiveTrack) + (GetSpriteWidth(ui.sliders[slider].handle) / 2) + handleX#, GetSpriteYByOffset(ui.sliders[slider].inactiveTrack))
 				SetSpriteColor(ui.sliders[slider].handle, 147, 145, 147, 255)
 				SetSpriteDepth(ui.sliders[slider].handle, GetSpriteDepth(ui.panels[a].background) - 3)
@@ -776,8 +776,8 @@ function UpdateUIListener()
 				SetSpriteColor(ui.sliders[slider].inactiveTrack, 61, 57, 60, 255)
 				SetSpriteDepth(ui.sliders[slider].inactiveTrack, GetSpriteDepth(ui.panels[a].background) - 1)
 				SetSpriteSize(ui.sliders[slider].handle, 15, 15)
-				percentage# = (100.0 / 500.0) * ui.sliders[slider].value#
-				handleX# = ((260.0 - GetSpriteWidth(ui.sliders[slider].handle)) / 100.0) * percentage#
+				percentage# = ((ui.sliders[slider].value# - ui.sliders[slider].min#) / (ui.sliders[slider].max# - ui.sliders[slider].min#)) * 100.0
+				handleX# = ((GetSpriteWidth(ui.sliders[slider].inactiveTrack) - GetSpriteWidth(ui.sliders[slider].handle)) / 100.0) * percentage#
 				SetSpritePositionByOffset(ui.sliders[slider].handle, GetSpriteX(ui.sliders[slider].inactiveTrack) + (GetSpriteWidth(ui.sliders[slider].handle) / 2) + handleX#, GetSpriteYByOffset(ui.sliders[slider].inactiveTrack))
 				SetSpriteColor(ui.sliders[slider].handle, 147, 145, 147, 255)
 				SetSpriteDepth(ui.sliders[slider].handle, GetSpriteDepth(ui.panels[a].background) - 3)
@@ -822,7 +822,9 @@ function UpdateUIListener()
 				SetSpriteColor(ui.sliders[slider].inactiveTrack, 61, 57, 60, 255)
 				SetSpriteDepth(ui.sliders[slider].inactiveTrack, GetSpriteDepth(ui.panels[a].background) - 1)
 				SetSpriteSize(ui.sliders[slider].handle, 15, 15)
-				SetSpritePositionByOffset(ui.sliders[slider].handle, GetSpriteXByOffset(ui.sliders[slider].inactiveTrack), GetSpriteYByOffset(ui.sliders[slider].inactiveTrack))
+				percentage# = ((ui.sliders[slider].value# - ui.sliders[slider].min#) / (ui.sliders[slider].max# - ui.sliders[slider].min#)) * 100.0
+				handleX# = ((GetSpriteWidth(ui.sliders[slider].inactiveTrack) - GetSpriteWidth(ui.sliders[slider].handle)) / 100.0) * percentage#
+				SetSpritePositionByOffset(ui.sliders[slider].handle, GetSpriteX(ui.sliders[slider].inactiveTrack) + (GetSpriteWidth(ui.sliders[slider].handle) / 2) + handleX#, GetSpriteYByOffset(ui.sliders[slider].inactiveTrack))
 				SetSpriteColor(ui.sliders[slider].handle, 147, 145, 147, 255)
 				SetSpriteDepth(ui.sliders[slider].handle, GetSpriteDepth(ui.panels[a].background) - 3)
 				if (ui.sliders[slider].activeTrackFromCentre = 0)
@@ -867,8 +869,8 @@ function UpdateUIListener()
 				SetSpriteColor(ui.sliders[slider].inactiveTrack, 61, 57, 60, 255)
 				SetSpriteDepth(ui.sliders[slider].inactiveTrack, GetSpriteDepth(ui.panels[a].background) - 1)
 				SetSpriteSize(ui.sliders[slider].handle, 15, 15)
-				percentage# = (100.0 / ui.sliders[slider].max#) * ui.sliders[slider].value#
-				handleX# = ((260.0 - GetSpriteWidth(ui.sliders[slider].handle)) / 100.0) * percentage#
+				percentage# = ((ui.sliders[slider].value# - ui.sliders[slider].min#) / (ui.sliders[slider].max# - ui.sliders[slider].min#)) * 100.0
+				handleX# = ((GetSpriteWidth(ui.sliders[slider].inactiveTrack) - GetSpriteWidth(ui.sliders[slider].handle)) / 100.0) * percentage#
 				SetSpritePositionByOffset(ui.sliders[slider].handle, GetSpriteX(ui.sliders[slider].inactiveTrack) + (GetSpriteWidth(ui.sliders[slider].handle) / 2) + handleX#, GetSpriteYByOffset(ui.sliders[slider].inactiveTrack))
 				SetSpriteColor(ui.sliders[slider].handle, 147, 145, 147, 255)
 				SetSpriteDepth(ui.sliders[slider].handle, GetSpriteDepth(ui.panels[a].background) - 3)
@@ -913,8 +915,8 @@ function UpdateUIListener()
 				SetSpriteColor(ui.sliders[slider].inactiveTrack, 61, 57, 60, 255)
 				SetSpriteDepth(ui.sliders[slider].inactiveTrack, GetSpriteDepth(ui.panels[a].background) - 1)
 				SetSpriteSize(ui.sliders[slider].handle, 15, 15)
-				percentage# = (100.0 / ui.sliders[slider].max#) * ui.sliders[slider].value#
-				handleX# = ((260.0 - GetSpriteWidth(ui.sliders[slider].handle)) / 100.0) * percentage#
+				percentage# = ((ui.sliders[slider].value# - ui.sliders[slider].min#) / (ui.sliders[slider].max# - ui.sliders[slider].min#)) * 100.0
+				handleX# = ((GetSpriteWidth(ui.sliders[slider].inactiveTrack) - GetSpriteWidth(ui.sliders[slider].handle)) / 100.0) * percentage#
 				SetSpritePositionByOffset(ui.sliders[slider].handle, GetSpriteX(ui.sliders[slider].inactiveTrack) + (GetSpriteWidth(ui.sliders[slider].handle) / 2) + handleX#, GetSpriteYByOffset(ui.sliders[slider].inactiveTrack))
 				SetSpriteColor(ui.sliders[slider].handle, 147, 145, 147, 255)
 				SetSpriteDepth(ui.sliders[slider].handle, GetSpriteDepth(ui.panels[a].background) - 3)
@@ -959,8 +961,8 @@ function UpdateUIListener()
 				SetSpriteColor(ui.sliders[slider].inactiveTrack, 61, 57, 60, 255)
 				SetSpriteDepth(ui.sliders[slider].inactiveTrack, GetSpriteDepth(ui.panels[a].background) - 1)
 				SetSpriteSize(ui.sliders[slider].handle, 15, 15)
-				percentage# = (100.0 / ui.sliders[slider].max#) * ui.sliders[slider].value#
-				handleX# = ((260.0 - GetSpriteWidth(ui.sliders[slider].handle)) / 100.0) * percentage#
+				percentage# = ((ui.sliders[slider].value# - ui.sliders[slider].min#) / (ui.sliders[slider].max# - ui.sliders[slider].min#)) * 100.0
+				handleX# = ((GetSpriteWidth(ui.sliders[slider].inactiveTrack) - GetSpriteWidth(ui.sliders[slider].handle)) / 100.0) * percentage#
 				SetSpritePositionByOffset(ui.sliders[slider].handle, GetSpriteX(ui.sliders[slider].inactiveTrack) + (GetSpriteWidth(ui.sliders[slider].handle) / 2) + handleX#, GetSpriteYByOffset(ui.sliders[slider].inactiveTrack))
 				SetSpriteColor(ui.sliders[slider].handle, 147, 145, 147, 255)
 				SetSpriteDepth(ui.sliders[slider].handle, GetSpriteDepth(ui.panels[a].background) - 3)
@@ -979,7 +981,7 @@ function UpdateUIListener()
 				SetSpriteDepth(ui.sliders[slider].activeTrack, GetSpriteDepth(ui.panels[a].background) - 2)
 
 				checkbox = 0
-				ui.checkboxes[checkbox].name$ = "RotateTowardsWave"
+				ui.checkboxes[checkbox].name$ = "RotateAlongWave"
 				ui.checkboxes[checkbox].value = 1
 				SetSpritePosition(ui.checkboxes[checkbox].container, GetSpriteX(ui.panels[a].background) + 20, GetSpriteY(ui.sliders[2].container) + GetSpriteHeight(ui.sliders[2].container) + 14)
 				SetSpriteSize(ui.checkboxes[checkbox].container, 260, 20)
@@ -993,7 +995,7 @@ function UpdateUIListener()
 				SetSpriteSize(ui.checkboxes[checkbox].foreground, 15, 15)
 				SetSpriteDepth(ui.checkboxes[checkbox].foreground, GetSpriteDepth(ui.checkboxes[checkbox].container) - 2)
 				SetSpritePosition(ui.checkboxes[checkbox].foreground, GetSpriteX(ui.checkboxes[checkbox].background), GetSpriteY(ui.checkboxes[checkbox].background))
-				SetTextString(ui.checkboxes[checkbox].label, "Rotate towards wave")
+				SetTextString(ui.checkboxes[checkbox].label, "Rotate along wave")
 				SetTextSize(ui.checkboxes[checkbox].label, defaultTextSize#)
 				SetTextDepth(ui.checkboxes[checkbox].label, GetSpriteDepth(ui.checkboxes[checkbox].container) - 1)
 				SetTextPosition(ui.checkboxes[checkbox].label, GetSpriteX(ui.checkboxes[checkbox].background) + GetSpriteWidth(ui.checkboxes[checkbox].background) + 8, GetSpriteYByOffset(ui.checkboxes[checkbox].background) - (GetTextTotalHeight(ui.checkboxes[checkbox].label) / 2))
