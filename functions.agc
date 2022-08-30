@@ -72,6 +72,18 @@ endfunction variableValue$
 
 
 
+function Hue2RGB(p# as float, q# as float, t# as float)
+	value# as float
+	
+	if (t# < 0.0) then t# = t# + 1.0
+	if (t# > 1.0) then t# = t# - 1.0
+	if (t# < 1.0 / 6.0) then value# = p# + (q# - p#) * 6.0 * t#
+	if (t# < 1.0 / 2.0) then value# = q#
+	if (t# < 2.0 / 3.0) then value# = p# + (q# - p#) * (2.0 / 3.0 - t#) * 6.0
+endfunction value# * 255
+
+
+
 function InRange(variable# as float, min# as float, max# as float)
 	local inRange as integer : inRange = 0
 	
