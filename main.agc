@@ -993,7 +993,7 @@ do
 			endif
 		endif
 		if (particlesKeyFrames[i].group$ = "Scale")
-			if (GetEditBoxExists(particlesKeyFrames[i].timeEditbox))
+			if (GetEditBoxExists(particlesKeyFrames[i].scaleEditbox) and GetEditBoxExists(particlesKeyFrames[i].timeEditbox))
 				if (GetEditBoxText(particlesKeyFrames[i].scaleEditbox) = "-0") then SetEditBoxText(particlesKeyFrames[i].scaleEditbox, "0")
 				if (GetEditBoxText(particlesKeyFrames[i].timeEditbox) = "-0") then SetEditBoxText(particlesKeyFrames[i].timeEditbox, "0")
 				if (GetEditBoxHasFocus(particlesKeyFrames[i].scaleEditbox))

@@ -785,6 +785,10 @@ function UpdateUIListener()
 				SetEditBoxPosition(ui.sliders[c].minEditbox, -99999, -99999)
 				FixEditBoxToScreen(ui.sliders[c].minEditbox, 1)
 			next
+			for c = 0 to ui.panels[a].buttons.length
+				SetSpritePosition(ui.panels[a].buttons[c].background, -99999, -99999)
+				SetTextPosition(ui.panels[a].buttons[c].label, -99999, -99999)
+			next
 			for c = 0 to particlesKeyFrames.length
 				DeleteEditbox(particlesKeyFrames[c].alphaEditbox)
 				DeleteText(particlesKeyFrames[c].alphaLabel)
@@ -1730,7 +1734,11 @@ function UpdateUIListener()
 					buttonHeight# = 20
 					buttonWidth# = 120
 					buttonX# = GetSpriteX(ui.panels[a].invisibleDragZone) + 20 + (buttonWidth# * b) + (b * 10)
-					buttonY# = GetSpriteY(particlesKeyFrames[keyFrame - 1].container) + GetSpriteHeight(particlesKeyFrames[keyFrame - 1].container) + 20
+					if (particlesKeyFrames.length >= 0)
+						buttonY# = GetSpriteY(particlesKeyFrames[particlesKeyFrames.length].container) + GetSpriteHeight(particlesKeyFrames[particlesKeyFrames.length].container) + 20
+					else
+						buttonY# = GetSpriteY(ui.panels[a].subHeaders[0].container) + GetSpriteHeight(ui.panels[a].subHeaders[0].container) + 10
+					endif	
 					labelX# = 0
 					labelY# = 0
 					if (b = 0) then ui.panels[a].buttons[b].name$ = "AddColorKeyFrame"
