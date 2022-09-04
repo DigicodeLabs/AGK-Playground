@@ -52,6 +52,70 @@ endfunction formattedNumber$
 
 
 
+function CreateOrUpdateCodeLine(index as integer, text$ as string)
+	local commands as string[]
+	
+	if (GetTextExists(codeLines[index]) = 0)
+		codeLines[index] = CreateText(text$)
+	else
+		SetTextString(codeLines[index], text$)
+	endif
+	
+	commands = ["do", "loop"] 
+	for command = 0 to commands.length
+		if (GetTextString(codeLines[index]) = commands[command])
+			SetTextColor(codeLines[index], 61, 157, 220, 255)
+		endif
+	next
+	commands = ["AddParticlesColorKeyFrame(", "AddParticlesScaleKeyFrame(", "atan2(", "ClearParticlesColors(", "ClearParticlesScales(", "cos(", "CreateParticles(", "CreateSprite(", "GetSpriteAngle(", "GetSpriteXByOffset(", "GetSpriteYByOffset(", "LoadImage(", "SetParticlesAngle(", "SetParticlesDirection(", "SetParticlesFrequency(", "SetParticlesImage(", "SetParticlesLife(", "SetParticlesPosition(", "SetParticlesSize(", "SetParticlesStartZone(", "SetParticlesVelocityRange(", "SetSpritePositionByOffset(", "SetSpriteAngle(", "SetSpriteSize(", "sin(", "Sync(", "val("] 
+	for command = 0 to commands.length
+		offset = 0
+		for count = 1 to FindStringCount(GetTextString(codeLines[index]), commands[command])
+			position = FindString(GetTextString(codeLines[index]), commands[command], 1, offset) - 1
+			if (position <> -1)
+				for char = position to position + len(commands[command]) - 2
+					SetTextCharColor(codeLines[index], char, 0, 203, 177, 255)
+				next
+			endif
+			offset = position + len(commands[command])
+		next
+	next
+	lastChar$ = ""
+	for char = 1 to len(GetTextString(codeLines[index]))
+		if (char > 1)
+			lastChar$ = Mid(GetTextString(codeLines[index]), char - 1, 1)
+		else
+			lastChar$ = ""
+		endif
+		currentChar$ = Mid(GetTextString(codeLines[index]), char, 1)
+		if (char < len(GetTextString(codeLines[index])))
+			nextChar$ = Mid(GetTextString(codeLines[index]), char + 1, 1)
+		else
+			nextChar$ = ""
+		endif
+		if (FindString("-.0123456789", currentChar$) > 0 and FindString(" (-.0123456789", lastChar$) > 0)
+			SetTextCharColor(codeLines[index], char - 1, 0, 255, 0, 255)
+		endif
+	next
+	position = FindString(GetTextString(codeLines[index]), "//", 1, offset) - 1
+	if (position <> -1)
+		for char = position to len(GetTextString(codeLines[index]))
+			SetTextCharColor(codeLines[index], char, 40, 170, 57, 255)
+		next
+	endif
+endfunction
+
+
+
+function DeleteCodeLines()
+	for i = 0 to codeLines.length
+		if (GetTextExists(codeLines[i])) then DeleteText(codeLines[i])
+	next
+	codeLines.length = -1
+endfunction
+
+
+
 function GetIconImageID(iconName$ as string)
 	
 endfunction icon[icon.find(iconName$)].imageID
@@ -145,6 +209,44 @@ function MinInt(a as integer, b as integer)
 		minValue = b
 	endif
 endfunction minValue
+
+
+
+function ResetProperties()
+	if (selectedCategory = CATEGORY_COS_SIN_ORBIT)
+		ui.imageLoaders[0].value = imgPlanet
+		ui.imageLoaders[1].value = imgMoon
+		ui.sliders[0].value# = 150		// Orbited Sprite Height
+		ui.sliders[1].value# = 50		// Orbiting Sprite Height
+		ui.sliders[2].value# = 100		// Radius X
+		ui.sliders[3].value# = 100		// Radius Y
+		ui.sliders[4].value# = 2		// Angle Step Size
+	endif
+	if (selectedCategory = CATEGORY_2D_PARTICLES)
+		ui.imageLoaders[0].value = imgParticle
+		ui.sliders[0].value# = 50		// Particle Size
+		ui.sliders[1].value# = 20		// Angle Range
+		ui.sliders[2].value# = 0		// Direction X
+		ui.sliders[3].value# = -15		// Direction Y
+		ui.sliders[4].value# = 100		// Frequency
+		ui.sliders[5].value# = 6		// Particle Life
+		ui.sliders[6].minValue# = 2	// Velocity Range
+		ui.sliders[6].maxValue# = 4	// Velocity Range
+		ui.sliders[7].minValue# = -30	// Start Zone X
+		ui.sliders[7].maxValue# = 30	// Start Zone X
+		ui.sliders[8].minValue# = -20	// Start Zone Y
+		ui.sliders[8].maxValue# = 20	// Start Zone Y
+		ui.checkboxes[0].value = 0	// Debug: Show Starting Zone
+	endif
+	if (selectedCategory = CATEGORY_SINE_WAVES)
+		ui.imageLoaders[0].value = imgSpaceship
+		ui.sliders[0].value# = 50		// Sprite Height
+		ui.sliders[1].value# = 1		// Angular Frequency
+		ui.sliders[2].value# = 100		// Amplitude
+		ui.sliders[3].value# = 1		// Spacing X
+		ui.checkboxes[0].value = 1	// Rotate along wave
+	endif
+endfunction
 
 
 

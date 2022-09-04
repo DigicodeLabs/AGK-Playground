@@ -1,6 +1,21 @@
 // File: ui.agc
 // Created: 22-08-22
 
+type typeAboutWindow
+	id as integer
+	attributions as integer
+	background as integer
+	closeButton as typeButton
+	copyright as integer
+	description as integer
+	feedbackAndIssues as integer
+	kenneyLink as integer
+	scrim as integer
+	socialButtons as typeButton[10]
+	title as integer
+	version as integer
+endtype
+
 type typeButton
 	id as integer
 	background as integer
@@ -29,6 +44,19 @@ type typeEditBox
 	value# as float
 endtype
 
+type typeImageLoaders
+	id as integer
+	container as integer
+	image as integer
+	imageBackground as integer
+	imageBorder as integer
+	importButton as typeButton
+	label as integer
+	name$ as string
+	removeButton as typeButton
+	value as integer
+endtype
+	
 type typePanel
 	id as integer
 	background as integer
@@ -54,6 +82,7 @@ type typeSlider
 	handle as integer
 	inactiveTrack as integer
 	label as integer
+	labelText$ as string
 	max# as float
 	maxEditbox as integer
 	maxHandle as integer
@@ -77,7 +106,9 @@ type typeSubHeader
 endtype
 
 type typeUI
+	aboutWindow as typeAboutWindow
 	checkboxes as typeCheckbox[10]
+	imageLoaders as typeImageLoaders[10]
 	panels as typePanel[]
 	sliders as typeSlider[10]
 endtype
@@ -91,6 +122,7 @@ global blankSubHeader as typeSubHeader
 global buttonColors as string[]
 global buttonIcons as string[]
 global buttonLabels as string[]
+global buttonNames as string[]
 global categoriesPanelIndex as integer
 global categoriesPanelWidth# as float : categoriesPanelWidth# = 100
 global codePanelIndex as integer
@@ -104,8 +136,8 @@ global minWindowWidth as integer : minWindowWidth = 1024
 global playgroundPanelIndex as integer
 global propertiesPanelIndex as integer
 global propertiesPanelWidth# as float : propertiesPanelWidth# = 300
-global redrawPlayground as integer : redrawPlayground = 1
 global redrawUI as integer : redrawUI = 1
+global showAboutWindow as integer : showAboutWindow = 0
 global tabsPanelHeight# as float : tabsPanelHeight# = 40
 global tabsPanelIndex as integer
 global tabSelected as integer : tabSelected = 0
@@ -125,6 +157,25 @@ for i = 0 to 9
 	SetSpritePosition(ui.checkboxes[i].foreground, -99999, -99999)
 	ui.checkboxes[i].label = CreateText("Checkbox")
 	SetTextPosition(ui.checkboxes[i].label, -99999, -99999)
+	
+	ui.imageLoaders[i].container = CreateSprite(0)
+	SetSpritePosition(ui.imageLoaders[i].container, -99999, -99999)
+	ui.imageLoaders[i].imageBorder = CreateSprite(0)
+	SetSpritePosition(ui.imageLoaders[i].imageBorder, -99999, -99999)
+	ui.imageLoaders[i].imageBackground = CreateSprite(0)
+	SetSpritePosition(ui.imageLoaders[i].imageBackground, -99999, -99999)
+	ui.imageLoaders[i].image = CreateSprite(0)
+	SetSpritePosition(ui.imageLoaders[i].image, -99999, -99999)
+	ui.imageLoaders[i].importButton.background = CreateSprite(0)
+	SetSpritePosition(ui.imageLoaders[i].importButton.background, -99999, -99999)
+	ui.imageLoaders[i].importButton.label = CreateText("Import Image")
+	SetTextPosition(ui.imageLoaders[i].importButton.label, -99999, -99999)
+	ui.imageLoaders[i].label = CreateText("Image Loader")
+	SetTextPosition(ui.imageLoaders[i].label, -99999, -99999)
+	ui.imageLoaders[i].removeButton.background = CreateSprite(0)
+	SetSpritePosition(ui.imageLoaders[i].removeButton.background, -99999, -99999)
+	ui.imageLoaders[i].removeButton.label = CreateText("Remove Image")
+	SetTextPosition(ui.imageLoaders[i].removeButton.label, -99999, -99999)
 	
 	ui.sliders[i].container = CreateSprite(0)
 	SetSpritePosition(ui.sliders[i].container, -99999, -99999)
@@ -174,9 +225,9 @@ ui.panels[ui.panels.length].verticalScrollBar = CreateSprite(0)
 SetSpriteSize(ui.panels[ui.panels.length].verticalScrollBar, 12, 100)
 SetSpriteColor(ui.panels[ui.panels.length].verticalScrollBar, 61, 61, 61, 255)
 SetSpriteDepth(ui.panels[ui.panels.length].verticalScrollBar, 7)
-buttonColors = ["EA3C25", "F09333", "FFF24A", "8CC63F"] // "F09333"
-buttonIcons = ["category", "scatter_plot", "waves", "play_arrow"] // "hdr_weak"
-buttonLabels = ["2D Particles", "Cos/Sin Orbit", "Sine Wave", "Tweens"] // "2D Physics"
+buttonColors = ["EA3C25", "F09333", "FFF24A"] // "8CC63F", "F09333"
+buttonIcons = ["category", "scatter_plot", "waves"] //  "play_arrow", "hdr_weak"
+buttonLabels = ["2D Particles", "Cos/Sin Orbit", "Sine Wave"] // "2D Tweens", "2D Physics"
 for i = 0 to buttonIcons.length
 	ui.panels[ui.panels.length].buttons.insert(blankButton)
 	ui.panels[ui.panels.length].buttons[i].name$ = buttonLabels[i]
@@ -196,6 +247,9 @@ ui.panels[ui.panels.length].name$ = "Code Panel"
 ui.panels[ui.panels.length].background = CreateSprite(0)
 SetSpriteColor(ui.panels[ui.panels.length].background, 30, 30, 30, 0)
 SetSpriteDepth(ui.panels[ui.panels.length].background, 100)
+ui.panels[ui.panels.length].invisibleDragZone = CreateSprite(0)
+SetSpriteColor(ui.panels[ui.panels.length].invisibleDragZone, 0, 0, 0, 0)
+SetSpriteDepth(ui.panels[ui.panels.length].invisibleDragZone, 99)
 ui.panels[ui.panels.length].horizontalScrollBar = CreateSprite(0)
 SetSpriteSize(ui.panels[ui.panels.length].horizontalScrollBar, 100, 12)
 SetSpriteColor(ui.panels[ui.panels.length].horizontalScrollBar, 61, 61, 61, 255)
@@ -204,16 +258,15 @@ ui.panels[ui.panels.length].verticalScrollBar = CreateSprite(0)
 SetSpriteSize(ui.panels[ui.panels.length].verticalScrollBar, 12, 100)
 SetSpriteColor(ui.panels[ui.panels.length].verticalScrollBar, 61, 61, 61, 255)
 SetSpriteDepth(ui.panels[ui.panels.length].verticalScrollBar, 7)
-remstart
-buttonIcons = ["content_copy"]
+buttonIcons = ["unfold_less", "content_copy"]
+buttonNames = ["Unfold", "Copy"]
 for i = 0 to buttonIcons.length
 	ui.panels[ui.panels.length].buttons.insert(blankButton)
-	ui.panels[ui.panels.length].buttons[i].name$ = buttonIcons[i]
+	ui.panels[ui.panels.length].buttons[i].name$ = buttonNames[i]
 	ui.panels[ui.panels.length].buttons[i].icon = CreateSprite(GetIconImageID(buttonIcons[i]))
 	SetSpriteColor(ui.panels[ui.panels.length].buttons[i].icon, 170, 170, 170, 255)
 	SetSpriteDepth(ui.panels[ui.panels.length].buttons[i].icon, 7)
 next
-remend
 
 ui.panels.insert(blankPanel)
 playgroundPanelIndex = ui.panels.length
@@ -270,16 +323,17 @@ SetSpriteColor(ui.panels[ui.panels.length].verticalScrollBar, 61, 61, 61, 255)
 SetSpriteDepth(ui.panels[ui.panels.length].verticalScrollBar, 17)
 buttonColors = ["0A62E3", "0A62E3"]
 buttonLabels = ["Add Color Frame", "Add Scale Frame"]
-for i = 0 to buttonIcons.length
+buttonNames = ["AddColorKeyFrame", "AddScaleKeyFrame"]					
+for i = 0 to buttonLabels.length
 	ui.panels[ui.panels.length].buttons.insert(blankButton)
-	ui.panels[ui.panels.length].buttons[i].name$ = buttonLabels[i]
+	ui.panels[ui.panels.length].buttons[i].name$ = buttonNames[i]
 	ui.panels[ui.panels.length].buttons[i].background = CreateSprite(0)
 	SetSpriteColorFromHex(ui.panels[ui.panels.length].buttons[i].background, buttonColors[i])
-	SetSpriteDepth(ui.panels[ui.panels.length].buttons[i].background, 19)
+	SetSpriteDepth(ui.panels[ui.panels.length].buttons[i].background, 18)
 	ui.panels[ui.panels.length].buttons[i].label = CreateText(buttonLabels[i])
 	SetTextAlignment(ui.panels[ui.panels.length].buttons[i].label, 1)
 	SetTextBold(ui.panels[ui.panels.length].buttons[i].label, 1)
-	SetTextDepth(ui.panels[ui.panels.length].buttons[i].label, 18)
+	SetTextDepth(ui.panels[ui.panels.length].buttons[i].label, 17)
 next
 
 ui.panels.insert(blankPanel)
@@ -308,6 +362,9 @@ ui.panels[ui.panels.length].name$ = "Top Panel"
 ui.panels[ui.panels.length].background = CreateSprite(0)
 SetSpriteColor(ui.panels[ui.panels.length].background, 58, 58, 58, 255)
 SetSpriteDepth(ui.panels[ui.panels.length].background, 10)
+ui.panels[ui.panels.length].titleLabel = CreateText("AGK Playground")
+SetTextColor(ui.panels[ui.panels.length].titleLabel, 170, 170, 170, 255)
+SetTextDepth(ui.panels[ui.panels.length].titleLabel, 9)
 buttonIcons = ["info"]
 buttonLabels = ["About"]
 for i = 0 to buttonIcons.length
@@ -322,6 +379,45 @@ for i = 0 to buttonIcons.length
 	SetTextColor(ui.panels[ui.panels.length].buttons[i].label, 170, 170, 170, 255)
 	SetTextDepth(ui.panels[ui.panels.length].buttons[i].label, 9)
 next
+
+ui.aboutWindow.scrim = CreateSprite(0)
+SetSpritePosition(ui.aboutWindow.scrim, -99999, -99999)
+ui.aboutWindow.background = CreateSprite(0)
+SetSpritePosition(ui.aboutWindow.background, -99999, -99999)
+ui.aboutWindow.title = CreateText("")
+SetTextPosition(ui.aboutWindow.title, -99999, -99999)
+ui.aboutWindow.description = CreateText("")
+SetTextPosition(ui.aboutWindow.description, -99999, -99999)
+ui.aboutWindow.attributions = CreateText("")
+SetTextPosition(ui.aboutWindow.attributions, -99999, -99999)
+ui.aboutWindow.kenneyLink = CreateSprite(0)
+SetSpritePosition(ui.aboutWindow.kenneyLink, -99999, -99999)
+ui.aboutWindow.version = CreateText("")
+SetTextPosition(ui.aboutWindow.version, -99999, -99999)
+ui.aboutWindow.closeButton.icon = CreateSprite(0)
+SetSpritePosition(ui.aboutWindow.closeButton.icon, -99999, -99999)
+ui.aboutWindow.copyright = CreateText("")
+SetTextPosition(ui.aboutWindow.copyright, -99999, -99999)
+ui.aboutWindow.feedbackAndIssues = CreateText("")
+SetTextPosition(ui.aboutWindow.feedbackAndIssues, -99999, -99999)
+buttonIcons = ["", ""]
+buttonLabels = ["", ""]
+buttonNames = ["", ""]
+for i = 0 to buttonIcons.length
+	ui.aboutWindow.socialButtons.insert(blankButton)
+	ui.aboutWindow.socialButtons[i].name$ = buttonNames[i]
+	ui.aboutWindow.socialButtons[i].icon = CreateSprite(GetIconImageID(buttonIcons[i]))
+	SetSpriteColor(ui.aboutWindow.socialButtons[i].icon, 170, 170, 170, 255)
+	SetSpriteDepth(ui.aboutWindow.socialButtons[i].icon, 9)
+	SetSpritePosition(ui.aboutWindow.socialButtons[i].icon, -99999, -99999)
+	ui.aboutWindow.socialButtons[i].label = CreateText(buttonLabels[i])
+	SetTextAlignment(ui.aboutWindow.socialButtons[i].label, 1)
+	SetTextBold(ui.aboutWindow.socialButtons[i].label, 1)
+	SetTextColor(ui.aboutWindow.socialButtons[i].label, 170, 170, 170, 255)
+	SetTextDepth(ui.aboutWindow.socialButtons[i].label, 9)
+	SetTextPosition(ui.aboutWindow.socialButtons[i].label, -99999, -99999)
+next
+
 
 
 function DraggingPlaygroundHorizontalScrollBar(scrollBarID as integer, trackSize# as float, contentSize# as float)
@@ -413,6 +509,26 @@ endfunction
 
 
 
+function HideAboutWindow()
+	SetSpritePosition(ui.aboutWindow.scrim, -99999, -99999)
+	SetSpritePositionByOffset(ui.aboutWindow.background, -99999, -99999)
+	SetTextPosition(ui.aboutWindow.title, -99999, -99999)
+	SetSpritePosition(ui.aboutWindow.closeButton.icon, -99999, -99999)
+	SetTextPosition(ui.aboutWindow.version, -99999, -99999)
+	SetTextPosition(ui.aboutWindow.attributions, -99999, -99999)
+	SetSpritePosition(ui.aboutWindow.kenneyLink, -99999, -99999)
+	SetTextPosition(ui.aboutWindow.copyright, -99999, -99999)
+	SetTextPosition(ui.aboutWindow.feedbackAndIssues, -99999, -99999)
+	for i = 0 to ui.aboutWindow.socialButtons.length
+		if (GetSpriteExists(ui.aboutWindow.socialButtons[i].icon))
+			SetSpritePosition(ui.aboutWindow.socialButtons[i].icon, -99999, -99999)
+			SetTextPosition(ui.aboutWindow.socialButtons[i].label, -99999, -99999)
+		endif
+	next
+endfunction
+
+
+
 function ResizePlaygroundHorizontalScrollBar(scrollBarID as integer, trackSize# as float, contentSize# as float)
 	local gripSize# as float
 	local windowContentRatio# as float
@@ -475,6 +591,19 @@ endfunction
 
 function ScrollBarsListener()
 	for a = 0 to ui.panels.length
+		if (ui.panels[a].name$ = "Code Panel") // and redrawUI = 1)	
+			SetSpriteSize(ui.panels[a].invisibleDragZone, ui.panels[a].contentWidth#, ui.panels[a].contentHeight#)
+			attachedTo = ui.panels[a].invisibleDragZone
+			panelID = ui.panels[a].background
+			trackSize# = GetWindowHeight() - topPanelHeight# - tabsPanelHeight#
+			UpdatePanelVerticalScrollBar(ui.panels[a].verticalScrollBar, panelID, attachedTo, trackSize#, ui.panels[a].contentHeight#)
+			FixSpriteToScreen(ui.panels[a].verticalScrollBar, 1)
+			attachedTo = ui.panels[a].invisibleDragZone
+			panelID = ui.panels[a].background
+			trackSize# = GetWindowWidth() - categoriesPanelWidth# - propertiesPanelWidth#
+			UpdatePanelHorizontalScrollBar(ui.panels[a].horizontalScrollBar, panelID, attachedTo, trackSize#, ui.panels[a].contentWidth#)
+			FixSpriteToScreen(ui.panels[a].horizontalScrollBar, 1)
+		endif
 		if (ui.panels[a].name$ = "Playground Panel" and (redrawPlayground = 1 or redrawUI = 1))
 			trackSize# = GetWindowHeight() - topPanelHeight#
 			UpdatePlaygroundVerticalScrollBar(ui.panels[a].verticalScrollBar, trackSize#, ui.panels[a].contentHeight#)
@@ -491,6 +620,106 @@ function ScrollBarsListener()
 			UpdatePanelVerticalScrollBar(ui.panels[a].verticalScrollBar, panelID, attachedTo, trackSize#, ui.panels[a].contentHeight#)
 			FixSpriteToScreen(ui.panels[a].verticalScrollBar, 1)
 		endif
+	next
+endfunction
+
+
+
+function ShowAboutWindow()
+	local buttonImages as string[]
+	local buttonLabels as string[]
+	local buttonNames as string[]
+	
+	SetSpriteSize(ui.aboutWindow.scrim, GetWindowWidth(), GetWindowHeight())
+	SetSpritePosition(ui.aboutWindow.scrim, 0, 0)
+	SetSpriteColor(ui.aboutWindow.scrim, 0, 0, 0, 200)
+	SetSpriteDepth(ui.aboutWindow.scrim, 3)
+	FixSpriteToScreen(ui.aboutWindow.scrim, 1)
+	
+	SetSpriteSize(ui.aboutWindow.background, 400, 300)
+	SetSpritePositionByOffset(ui.aboutWindow.background, GetWindowWidth() / 2, GetWindowHeight() / 2)
+	SetSpriteColor(ui.aboutWindow.background, 51, 51, 51, 255)
+	SetSpriteDepth(ui.aboutWindow.background, 2)
+	FixSpriteToScreen(ui.aboutWindow.background, 1)
+	
+	SetTextString(ui.aboutWindow.title, "AGK Playground")
+	SetTextSize(ui.aboutWindow.title, defaultTextSize# + 10)
+	SetTextBold(ui.aboutWindow.title, 1)
+	SetTextAlignment(ui.aboutWindow.title, 1)
+	SetTextPosition(ui.aboutWindow.title, GetSpriteXByOffset(ui.aboutWindow.background), GetSpriteY(ui.aboutWindow.background) + 10)
+	SetTextDepth(ui.aboutWindow.title, 1)
+	FixTextToScreen(ui.aboutWindow.title, 1)
+	
+	SetSpriteSize(ui.aboutWindow.closeButton.icon, 25, 25)
+	SetSpriteImage(ui.aboutWindow.closeButton.icon, GetIconImageID("close"))
+	SetSpritePosition(ui.aboutWindow.closeButton.icon, GetSpriteX(ui.aboutWindow.background) + GetSpriteWidth(ui.aboutWindow.background) - 25, GetSpriteY(ui.aboutWindow.background))
+	SetSpriteDepth(ui.aboutWindow.closeButton.icon, 1)
+	FixSpriteToScreen(ui.aboutWindow.closeButton.icon, 1)
+	
+	SetTextString(ui.aboutWindow.version, "Version " + versionNumber$)
+	SetTextSize(ui.aboutWindow.version, defaultTextSize#)
+	SetTextBold(ui.aboutWindow.version, 1)
+	SetTextAlignment(ui.aboutWindow.version, 1)
+	SetTextPosition(ui.aboutWindow.version, GetSpriteXByOffset(ui.aboutWindow.background), GetTextY(ui.aboutWindow.title) + GetTextTotalHeight(ui.aboutWindow.title) + 20)
+	SetTextDepth(ui.aboutWindow.version, 1)
+	FixTextToScreen(ui.aboutWindow.version, 1)
+	
+	SetTextString(ui.aboutWindow.attributions, "Images by kenney.nl")
+	SetTextSize(ui.aboutWindow.attributions, defaultTextSize#)
+	SetTextBold(ui.aboutWindow.attributions, 1)
+	SetTextAlignment(ui.aboutWindow.attributions, 1)
+	SetTextPosition(ui.aboutWindow.attributions, GetSpriteXByOffset(ui.aboutWindow.background), GetTextY(ui.aboutWindow.version) + GetTextTotalHeight(ui.aboutWindow.version) + 20)
+	SetTextDepth(ui.aboutWindow.attributions, 1)
+	FixTextToScreen(ui.aboutWindow.attributions, 1)
+	for char = 10 to len(GetTextString(ui.aboutWindow.attributions))
+		SetTextCharColor(ui.aboutWindow.attributions, char, 30, 229, 206, 255)
+	next
+	
+	SetSpriteSize(ui.aboutWindow.kenneyLink, 55, defaultTextSize#)
+	SetSpritePosition(ui.aboutWindow.kenneyLink, GetTextX(ui.aboutWindow.attributions) + (GetTextTotalWidth(ui.aboutWindow.attributions) / 2) - GetSpriteWidth(ui.aboutWindow.kenneyLink), GetTextY(ui.aboutWindow.attributions))
+	SetSpriteColor(ui.aboutWindow.kenneyLink, 255, 255, 0, 0)
+	SetSpriteDepth(ui.aboutWindow.kenneyLink, 1)
+	FixSpriteToScreen(ui.aboutWindow.kenneyLink, 1)
+	
+	SetTextString(ui.aboutWindow.copyright, "© 2022 Digicode Labs Ltd." + chr(10) + "All Rights Reserved.")
+	SetTextSize(ui.aboutWindow.copyright, defaultTextSize#)
+	SetTextBold(ui.aboutWindow.copyright, 1)
+	SetTextAlignment(ui.aboutWindow.copyright, 1)
+	SetTextPosition(ui.aboutWindow.copyright, GetSpriteXByOffset(ui.aboutWindow.background), GetTextY(ui.aboutWindow.attributions) + GetTextTotalHeight(ui.aboutWindow.attributions) + 30)
+	SetTextDepth(ui.aboutWindow.copyright, 1)
+	FixTextToScreen(ui.aboutWindow.copyright, 1)
+	
+	SetTextString(ui.aboutWindow.feedbackAndIssues, "Bugs, Feedback, and Suggestions")
+	SetTextSize(ui.aboutWindow.feedbackAndIssues, defaultTextSize#)
+	SetTextBold(ui.aboutWindow.feedbackAndIssues, 1)
+	SetTextAlignment(ui.aboutWindow.feedbackAndIssues, 1)
+	SetTextPosition(ui.aboutWindow.feedbackAndIssues, GetSpriteXByOffset(ui.aboutWindow.background), GetTextY(ui.aboutWindow.copyright) + GetTextTotalHeight(ui.aboutWindow.copyright) + 30)
+	SetTextDepth(ui.aboutWindow.feedbackAndIssues, 1)
+	FixTextToScreen(ui.aboutWindow.feedbackAndIssues, 1)
+	
+	buttonImages = ["icons/socials/itchio.png", "icons/socials/github.png"]
+	buttonLabels = ["itch.io", "GitHub"]
+	buttonNames = ["itchio", "github"]
+	for i = 0 to buttonIcons.length
+		ui.aboutWindow.socialButtons[i].name$ = buttonNames[i]
+		ui.aboutWindow.socialButtons[i].icon = CreateSprite(LoadImage(buttonImages[i]))
+		SetSpriteColor(ui.aboutWindow.socialButtons[i].icon, 255, 255, 255, 255)
+		SetSpriteDepth(ui.aboutWindow.socialButtons[i].icon, 1)
+		SetSpriteSize(ui.aboutWindow.socialButtons[i].icon, defaultButtonWidth#, defaultButtonHeight#)
+		if (i = 0)
+			SetSpritePosition(ui.aboutWindow.socialButtons[i].icon, GetSpriteXByOffset(ui.aboutWindow.background) - defaultButtonWidth# - 10, GetTextY(ui.aboutWindow.feedbackAndIssues) + GetTextTotalHeight(ui.aboutWindow.feedbackAndIssues) + 10)
+		else
+			SetSpritePosition(ui.aboutWindow.socialButtons[i].icon, GetSpriteXByOffset(ui.aboutWindow.background) + 10, GetTextY(ui.aboutWindow.feedbackAndIssues) + GetTextTotalHeight(ui.aboutWindow.feedbackAndIssues) + 10)
+		endif	
+		FixSpriteToScreen(ui.aboutWindow.socialButtons[i].icon, 1)
+		ui.aboutWindow.socialButtons[i].label = CreateText(buttonLabels[i])
+		SetTextAlignment(ui.aboutWindow.socialButtons[i].label, 1)
+		SetTextSize(ui.aboutWindow.socialButtons[i].label, defaultTextSize#)
+		SetTextBold(ui.aboutWindow.socialButtons[i].label, 1)
+		SetTextColor(ui.aboutWindow.socialButtons[i].label, 255, 255, 255, 255)
+		SetTextDepth(ui.aboutWindow.socialButtons[i].label, 1)
+		SetTextPosition(ui.aboutWindow.socialButtons[i].label, GetSpriteXByOffset(ui.aboutWindow.socialButtons[i].icon), GetSpriteY(ui.aboutWindow.socialButtons[i].icon) + GetSpriteHeight(ui.aboutWindow.socialButtons[i].icon) + 10)
+		FixTextToScreen(ui.aboutWindow.socialButtons[i].label, 1)
 	next
 endfunction
 
@@ -564,7 +793,8 @@ function UpdatePanelHorizontalScrollBar(scrollBarID as integer, panelID as integ
 	trackScrollAreaSize# = trackSize# - gripSize#
 	gripPositionOnTrack# = (trackScrollAreaSize# * windowPositionRatio#) - GetSpriteX(panelID)
 	if (contentSize# > trackSize#)
-		SetSpritePosition(scrollBarID, -gripPositionOnTrack#, GetSpriteY(attachedTo) + GetSpriteHeight(attachedTo) - 12)
+		//SetSpritePosition(scrollBarID, -gripPositionOnTrack#, GetSpriteY(attachedTo) + GetSpriteHeight(attachedTo) - 12)
+		SetSpritePosition(scrollBarID, -gripPositionOnTrack#, GetSpriteY(panelID) + GetSpriteHeight(panelID) - 12)
 	else
 		SetSpritePosition(scrollBarID, -1000, -1000)
 	endif
@@ -589,7 +819,8 @@ function UpdatePanelVerticalScrollBar(scrollBarID as integer, panelID as integer
 	trackScrollAreaSize# = trackSize# - gripSize#
 	gripPositionOnTrack# = (trackScrollAreaSize# * windowPositionRatio#) - GetSpriteY(panelID)
 	if (contentSize# > trackSize#)
-		SetSpritePosition(scrollBarID, GetSpriteX(attachedTo) + GetSpriteWidth(attachedTo) - 12, -gripPositionOnTrack#)
+		//SetSpritePosition(scrollBarID, GetSpriteX(attachedTo) + GetSpriteWidth(attachedTo) - 12, -gripPositionOnTrack#)
+		SetSpritePosition(scrollBarID, GetSpriteX(panelID) + GetSpriteWidth(panelID) - 12, -gripPositionOnTrack#)
 	else
 		SetSpritePosition(scrollBarID, -1000, -1000)
 	endif
@@ -668,7 +899,11 @@ function UpdateUIListener()
 			panelWidth# = GetWindowWidth() - categoriesPanelWidth# - propertiesPanelWidth#
 			panelX# = categoriesPanelWidth#
 			panelY# = topPanelHeight# + tabsPanelHeight#
-			SetSpritePosition(ui.panels[a].background, panelX#, panelY#)
+			if (tabSelected = 1)
+				SetSpritePosition(ui.panels[a].background, panelX#, panelY#)
+			else
+				SetSpritePosition(ui.panels[a].background, -99999, -99999)
+			endif
 			SetSpriteSize(ui.panels[a].background, panelWidth#, panelHeight#)
 			FixSpriteToScreen(ui.panels[a].background, 1)
 			for b = 0 to ui.panels[a].buttons.length
@@ -683,7 +918,7 @@ function UpdateUIListener()
 				FixSpriteToScreen(ui.panels[a].buttons[b].icon, 1)
 			next
 			contentHeight# = ui.panels[a].contentHeight#
-			trackSize# = GetWindowHeight() - topPanelHeight#
+			trackSize# = GetWindowHeight() - topPanelHeight# - tabsPanelHeight#
 			UpdatePlaygroundVerticalScrollBar(ui.panels[a].verticalScrollBar, trackSize#, contentHeight#)
 			FixSpriteToScreen(ui.panels[a].verticalScrollBar, 1)
 			contentWidth# = ui.panels[a].contentWidth#
@@ -699,7 +934,11 @@ function UpdateUIListener()
 			panelWidth# = GetWindowWidth() - categoriesPanelWidth# - propertiesPanelWidth#
 			panelX# = categoriesPanelWidth#
 			panelY# = topPanelHeight# + tabsPanelHeight#
-			SetSpritePosition(ui.panels[a].background, panelX#, panelY#)
+			if (tabSelected = 0)
+				SetSpritePosition(ui.panels[a].background, panelX#, panelY#)
+			else
+				SetSpritePosition(ui.panels[a].background, -99999, -99999)
+			endif
 			SetSpriteSize(ui.panels[a].background, panelWidth#, panelHeight#)
 			FixSpriteToScreen(ui.panels[a].background, 1)
 			for b = 0 to ui.panels[a].buttons.length
@@ -714,7 +953,7 @@ function UpdateUIListener()
 				FixSpriteToScreen(ui.panels[a].buttons[b].icon, 1)
 			next
 			contentHeight# = ui.panels[a].contentHeight#
-			trackSize# = GetWindowHeight() - topPanelHeight#
+			trackSize# = GetWindowHeight() - topPanelHeight# - tabsPanelHeight#
 			UpdatePlaygroundVerticalScrollBar(ui.panels[a].verticalScrollBar, trackSize#, contentHeight#)
 			FixSpriteToScreen(ui.panels[a].verticalScrollBar, 1)
 			contentWidth# = ui.panels[a].contentWidth#
@@ -760,6 +999,25 @@ function UpdateUIListener()
 				FixSpriteToScreen(ui.checkboxes[c].foreground, 1)
 				SetTextPosition(ui.checkboxes[c].label, -99999, -99999)
 				FixTextToScreen(ui.checkboxes[c].label, 1)
+				
+				SetSpritePosition(ui.imageLoaders[c].container, -99999, -99999)
+				FixSpriteToScreen(ui.imageLoaders[c].container, 1)
+				SetSpritePosition(ui.imageLoaders[c].imageBorder, -99999, -99999)
+				FixSpriteToScreen(ui.imageLoaders[c].imageBorder, 1)
+				SetSpritePosition(ui.imageLoaders[c].imageBackground, -99999, -99999)
+				FixSpriteToScreen(ui.imageLoaders[c].imageBackground, 1)
+				SetSpritePosition(ui.imageLoaders[c].image, -99999, -99999)
+				FixSpriteToScreen(ui.imageLoaders[c].image, 1)
+				SetSpritePosition(ui.imageLoaders[c].importButton.background, -99999, -99999)
+				FixSpriteToScreen(ui.imageLoaders[c].importButton.background, 1)
+				SetTextPosition(ui.imageLoaders[c].importButton.label, -99999, -99999)
+				FixTextToScreen(ui.imageLoaders[c].importButton.label, 1)
+				SetTextPosition(ui.imageLoaders[c].label, -99999, -99999)
+				FixTextToScreen(ui.imageLoaders[c].label, 1)
+				SetSpritePosition(ui.imageLoaders[c].removeButton.background, -99999, -99999)
+				FixSpriteToScreen(ui.imageLoaders[c].removeButton.background, 1)
+				SetTextPosition(ui.imageLoaders[c].removeButton.label, -99999, -99999)
+				FixTextToScreen(ui.imageLoaders[c].removeButton.label, 1)
 				
 				SetSpritePosition(ui.sliders[c].container, -99999, -99999)
 				SetSpriteActive(ui.sliders[c].container, 0)
@@ -813,14 +1071,199 @@ function UpdateUIListener()
 			next
 			ui.panels[a].subHeaders.length = -1
 			if (selectedCategory = CATEGORY_COS_SIN_ORBIT)
+				imageLoader = 0
+				ui.imageLoaders[imageLoader].name$ = "OrbitedSpriteImage"
+				SetSpritePosition(ui.imageLoaders[imageLoader].container, GetSpriteX(ui.panels[a].background) + 20, GetSpriteY(ui.panels[a].background) + 10 + 40)
+				SetSpriteSize(ui.imageLoaders[imageLoader].container, 260, 100)
+				SetSpriteColor(ui.imageLoaders[imageLoader].container, 255, 255, 0, 0)
+				SetSpriteDepth(ui.imageLoaders[imageLoader].container, GetSpriteDepth(ui.panels[a].background))
+				SetTextSize(ui.imageLoaders[imageLoader].label, defaultTextSize#)
+				SetTextString(ui.imageLoaders[imageLoader].label, "Orbited Sprite Image")
+				SetTextPosition(ui.imageLoaders[imageLoader].label, GetSpriteX(ui.imageLoaders[imageLoader].container), GetSpriteY(ui.imageLoaders[imageLoader].container))
+				SetTextDepth(ui.imageLoaders[imageLoader].label, GetSpriteDepth(ui.panels[a].background) - 2)
+				SetSpritePosition(ui.imageLoaders[imageLoader].imageBorder, GetSpriteX(ui.imageLoaders[imageLoader].container), GetSpriteY(ui.imageLoaders[imageLoader].container) + 20)
+				SetSpriteSize(ui.imageLoaders[imageLoader].imageBorder, 100, 80)
+				SetSpriteColor(ui.imageLoaders[imageLoader].imageBorder, 116, 116, 116, 255)
+				SetSpriteDepth(ui.imageLoaders[imageLoader].imageBorder, GetSpriteDepth(ui.panels[a].background) - 2)
+				SetSpritePositionByOffset(ui.imageLoaders[imageLoader].imageBackground, GetSpriteXByOffset(ui.imageLoaders[imageLoader].imageBorder), GetSpriteYByOffset(ui.imageLoaders[imageLoader].imageBorder))
+				SetSpriteSize(ui.imageLoaders[imageLoader].imageBackground, 98, 78)
+				SetSpriteColor(ui.imageLoaders[imageLoader].imageBackground, 28, 24, 27, 255)
+				SetSpriteDepth(ui.imageLoaders[imageLoader].imageBackground, GetSpriteDepth(ui.panels[a].background) - 3)
+				SetSpritePositionByOffset(ui.imageLoaders[imageLoader].image, GetSpriteXByOffset(ui.imageLoaders[imageLoader].imageBorder), GetSpriteYByOffset(ui.imageLoaders[imageLoader].imageBorder))
+				if (ui.imageLoaders[imageLoader].value > 0)
+					SetSpriteSize(ui.imageLoaders[imageLoader].image, 70, 70)
+				else
+					SetSpriteSize(ui.imageLoaders[imageLoader].image, 50, 50)
+				endif
+				SetSpriteImage(ui.imageLoaders[imageLoader].image, ui.imageLoaders[imageLoader].value)
+				SetSpriteDepth(ui.imageLoaders[imageLoader].image, GetSpriteDepth(ui.panels[a].background) - 4)
+				SetSpriteSize(ui.imageLoaders[imageLoader].importButton.background, 145, 20)
+				SetSpritePosition(ui.imageLoaders[imageLoader].importButton.background, GetSpriteX(ui.imageLoaders[imageLoader].imageBorder) + GetSpriteWidth(ui.imageLoaders[imageLoader].imageBorder) + 10, GetSpriteY(ui.imageLoaders[imageLoader].imageBorder) + 15)
+				SetSpriteColor(ui.imageLoaders[imageLoader].importButton.background, 93, 89, 92, 255)
+				SetSpriteDepth(ui.imageLoaders[imageLoader].importButton.background, GetSpriteDepth(ui.panels[a].background) - 2)
+				SetTextAlignment(ui.imageLoaders[imageLoader].importButton.label, 1)
+				SetTextSize(ui.imageLoaders[imageLoader].importButton.label, defaultTextSize#)
+				SetTextPosition(ui.imageLoaders[imageLoader].importButton.label, GetSpriteXByOffset(ui.imageLoaders[imageLoader].importButton.background), GetSpriteYByOffset(ui.imageLoaders[imageLoader].importButton.background) - (GetTextTotalHeight(ui.imageLoaders[imageLoader].importButton.label) / 2))
+				SetTextDepth(ui.imageLoaders[imageLoader].importButton.label, GetSpriteDepth(ui.panels[a].background) - 3)
+				SetSpriteSize(ui.imageLoaders[imageLoader].removeButton.background, 145, 20)
+				SetSpritePosition(ui.imageLoaders[imageLoader].removeButton.background, GetSpriteX(ui.imageLoaders[imageLoader].imageBorder) + GetSpriteWidth(ui.imageLoaders[imageLoader].imageBorder) + 10, GetSpriteY(ui.imageLoaders[imageLoader].imageBorder) + 45)
+				SetSpriteColor(ui.imageLoaders[imageLoader].removeButton.background, 93, 89, 92, 255)
+				SetSpriteDepth(ui.imageLoaders[imageLoader].removeButton.background, GetSpriteDepth(ui.panels[a].background) - 2)
+				SetTextAlignment(ui.imageLoaders[imageLoader].removeButton.label, 1)
+				SetTextSize(ui.imageLoaders[imageLoader].removeButton.label, defaultTextSize#)
+				SetTextPosition(ui.imageLoaders[imageLoader].removeButton.label, GetSpriteXByOffset(ui.imageLoaders[imageLoader].removeButton.background), GetSpriteYByOffset(ui.imageLoaders[imageLoader].removeButton.background) - (GetTextTotalHeight(ui.imageLoaders[imageLoader].removeButton.label) / 2))
+				SetTextDepth(ui.imageLoaders[imageLoader].removeButton.label, GetSpriteDepth(ui.panels[a].background) - 3)
+				
 				slider = 0
+				ui.sliders[slider].name$ = "OrbitedSpriteHeight"
+				ui.sliders[slider].min# = 0
+				ui.sliders[slider].max# = 500
+				//ui.sliders[slider].value# = 100
+				ui.sliders[slider].activeTrackFromCentre = 0
+				ui.sliders[slider].rangeSlider = 0
+				//SetSpritePosition(ui.sliders[slider].container, GetSpriteX(ui.panels[a].background) + 20, GetSpriteY(ui.panels[a].background) + 10 + 40)
+				SetSpritePosition(ui.sliders[slider].container, GetSpriteX(ui.panels[a].background) + 20, GetSpriteY(ui.imageLoaders[0].container) + GetSpriteHeight(ui.imageLoaders[0].container) + 10)
+				SetSpriteSize(ui.sliders[slider].container, 260, 37)
+				SetSpriteColor(ui.sliders[slider].container, 255, 255, 0, 0)
+				SetSpriteDepth(ui.sliders[slider].container, GetSpriteDepth(ui.panels[a].background))
+				SetTextString(ui.sliders[slider].label, "Orbited Sprite Height")
+				SetTextSize(ui.sliders[slider].label, defaultTextSize#)
+				SetTextDepth(ui.sliders[slider].label, GetSpriteDepth(ui.panels[a].background) - 2)
+				SetTextPosition(ui.sliders[slider].label, GetSpriteX(ui.sliders[slider].container), GetSpriteY(ui.sliders[slider].container))
+				SetEditBoxText(ui.sliders[slider].editbox, str(ui.sliders[slider].value#, 0))
+				SetEditBoxPosition(ui.sliders[slider].editbox, GetSpriteX(ui.sliders[slider].container) + 260 - 50, GetSpriteY(ui.sliders[slider].container))
+				SetEditBoxSize(ui.sliders[slider].editbox, 45, GetEditBoxHeight(ui.sliders[slider].editbox))
+				SetEditBoxBorderSize(ui.sliders[slider].editbox, 1)
+				SetEditBoxBorderColor(ui.sliders[slider].editbox, 90, 88, 91, 255)
+				SetEditBoxInputType(ui.sliders[slider].editbox, 1)
+				SetEditBoxBackgroundColor(ui.sliders[slider].editbox, 61, 57, 60, 255)
+				SetEditBoxTextColor(ui.sliders[slider].editbox, 255, 255, 255)
+				SetEditBoxDepth(ui.sliders[slider].editbox, GetSpriteDepth(ui.panels[a].background) - 2)
+				SetSpritePosition(ui.sliders[slider].inactiveTrack, GetSpriteX(ui.sliders[slider].container) + 7.5, GetSpriteY(ui.sliders[slider].container) + 27)
+				SetSpriteSize(ui.sliders[slider].inactiveTrack, 260 - 15, 4)
+				SetSpriteColor(ui.sliders[slider].inactiveTrack, 61, 57, 60, 255)
+				SetSpriteDepth(ui.sliders[slider].inactiveTrack, GetSpriteDepth(ui.panels[a].background) - 2)
+				SetSpriteSize(ui.sliders[slider].handle, 15, 15)
+				percentage# = ((ui.sliders[slider].value# - ui.sliders[slider].min#) / (ui.sliders[slider].max# - ui.sliders[slider].min#)) * 100.0
+				handleX# = ((GetSpriteWidth(ui.sliders[slider].inactiveTrack) - GetSpriteWidth(ui.sliders[slider].handle)) / 100.0) * percentage#
+				SetSpritePositionByOffset(ui.sliders[slider].handle, GetSpriteX(ui.sliders[slider].inactiveTrack) + (GetSpriteWidth(ui.sliders[slider].handle) / 2) + handleX#, GetSpriteYByOffset(ui.sliders[slider].inactiveTrack))
+				SetSpriteColor(ui.sliders[slider].handle, 147, 145, 147, 255)
+				SetSpriteDepth(ui.sliders[slider].handle, GetSpriteDepth(ui.panels[a].background) - 4)
+				if (ui.sliders[slider].activeTrackFromCentre = 0)
+					SetSpriteSize(ui.sliders[slider].activeTrack, GetSpriteXByOffset(ui.sliders[slider].handle) - GetSpriteX(ui.sliders[slider].inactiveTrack), 4)
+					SetSpritePosition(ui.sliders[slider].activeTrack, GetSpriteX(ui.sliders[slider].container) + 7.5, GetSpriteY(ui.sliders[slider].container) + 27)
+				else
+					SetSpriteSize(ui.sliders[slider].activeTrack, abs(GetSpriteXByOffset(ui.sliders[slider].handle) - GetSpriteXByOffset(ui.sliders[slider].inactiveTrack)), 4)
+					if (ui.sliders[slider].value# < 0)
+						SetSpritePosition(ui.sliders[slider].activeTrack, GetSpriteXByOffset(ui.sliders[slider].inactiveTrack) - GetSpriteWidth(ui.sliders[slider].activeTrack), GetSpriteY(ui.sliders[slider].container) + 27)
+					else
+						SetSpritePosition(ui.sliders[slider].activeTrack, GetSpriteXByOffset(ui.sliders[slider].inactiveTrack), GetSpriteY(ui.sliders[slider].container) + 27)
+					endif	
+				endif
+				SetSpriteColor(ui.sliders[slider].activeTrack, 98, 96, 98, 255)
+				SetSpriteDepth(ui.sliders[slider].activeTrack, GetSpriteDepth(ui.panels[a].background) - 3)
+				
+				imageLoader = 1
+				ui.imageLoaders[imageLoader].name$ = "OrbitingImage"
+				SetSpritePosition(ui.imageLoaders[imageLoader].container, GetSpriteX(ui.panels[a].background) + 20, GetSpriteY(ui.sliders[0].container) + GetSpriteHeight(ui.sliders[0].container) + 10)
+				SetSpriteSize(ui.imageLoaders[imageLoader].container, 260, 100)
+				SetSpriteColor(ui.imageLoaders[imageLoader].container, 255, 255, 0, 0)
+				SetSpriteDepth(ui.imageLoaders[imageLoader].container, GetSpriteDepth(ui.panels[a].background))
+				SetTextSize(ui.imageLoaders[imageLoader].label, defaultTextSize#)
+				SetTextString(ui.imageLoaders[imageLoader].label, "Orbiting Image")
+				SetTextPosition(ui.imageLoaders[imageLoader].label, GetSpriteX(ui.imageLoaders[imageLoader].container), GetSpriteY(ui.imageLoaders[imageLoader].container))
+				SetTextDepth(ui.imageLoaders[imageLoader].label, GetSpriteDepth(ui.panels[a].background) - 2)
+				SetSpritePosition(ui.imageLoaders[imageLoader].imageBorder, GetSpriteX(ui.imageLoaders[imageLoader].container), GetSpriteY(ui.imageLoaders[imageLoader].container) + 20)
+				SetSpriteSize(ui.imageLoaders[imageLoader].imageBorder, 100, 80)
+				SetSpriteColor(ui.imageLoaders[imageLoader].imageBorder, 116, 116, 116, 255)
+				SetSpriteDepth(ui.imageLoaders[imageLoader].imageBorder, GetSpriteDepth(ui.panels[a].background) - 2)
+				SetSpritePositionByOffset(ui.imageLoaders[imageLoader].imageBackground, GetSpriteXByOffset(ui.imageLoaders[imageLoader].imageBorder), GetSpriteYByOffset(ui.imageLoaders[imageLoader].imageBorder))
+				SetSpriteSize(ui.imageLoaders[imageLoader].imageBackground, 98, 78)
+				SetSpriteColor(ui.imageLoaders[imageLoader].imageBackground, 28, 24, 27, 255)
+				SetSpriteDepth(ui.imageLoaders[imageLoader].imageBackground, GetSpriteDepth(ui.panels[a].background) - 3)
+				SetSpritePositionByOffset(ui.imageLoaders[imageLoader].image, GetSpriteXByOffset(ui.imageLoaders[imageLoader].imageBorder), GetSpriteYByOffset(ui.imageLoaders[imageLoader].imageBorder))
+				if (ui.imageLoaders[imageLoader].value > 0)
+					SetSpriteSize(ui.imageLoaders[imageLoader].image, 70, 70)
+				else
+					SetSpriteSize(ui.imageLoaders[imageLoader].image, 50, 50)
+				endif
+				SetSpriteImage(ui.imageLoaders[imageLoader].image, ui.imageLoaders[imageLoader].value)
+				SetSpriteDepth(ui.imageLoaders[imageLoader].image, GetSpriteDepth(ui.panels[a].background) - 4)
+				SetSpriteSize(ui.imageLoaders[imageLoader].importButton.background, 145, 20)
+				SetSpritePosition(ui.imageLoaders[imageLoader].importButton.background, GetSpriteX(ui.imageLoaders[imageLoader].imageBorder) + GetSpriteWidth(ui.imageLoaders[imageLoader].imageBorder) + 10, GetSpriteY(ui.imageLoaders[imageLoader].imageBorder) + 15)
+				SetSpriteColor(ui.imageLoaders[imageLoader].importButton.background, 93, 89, 92, 255)
+				SetSpriteDepth(ui.imageLoaders[imageLoader].importButton.background, GetSpriteDepth(ui.panels[a].background) - 2)
+				SetTextAlignment(ui.imageLoaders[imageLoader].importButton.label, 1)
+				SetTextSize(ui.imageLoaders[imageLoader].importButton.label, defaultTextSize#)
+				SetTextPosition(ui.imageLoaders[imageLoader].importButton.label, GetSpriteXByOffset(ui.imageLoaders[imageLoader].importButton.background), GetSpriteYByOffset(ui.imageLoaders[imageLoader].importButton.background) - (GetTextTotalHeight(ui.imageLoaders[imageLoader].importButton.label) / 2))
+				SetTextDepth(ui.imageLoaders[imageLoader].importButton.label, GetSpriteDepth(ui.panels[a].background) - 3)
+				SetSpriteSize(ui.imageLoaders[imageLoader].removeButton.background, 145, 20)
+				SetSpritePosition(ui.imageLoaders[imageLoader].removeButton.background, GetSpriteX(ui.imageLoaders[imageLoader].imageBorder) + GetSpriteWidth(ui.imageLoaders[imageLoader].imageBorder) + 10, GetSpriteY(ui.imageLoaders[imageLoader].imageBorder) + 45)
+				SetSpriteColor(ui.imageLoaders[imageLoader].removeButton.background, 93, 89, 92, 255)
+				SetSpriteDepth(ui.imageLoaders[imageLoader].removeButton.background, GetSpriteDepth(ui.panels[a].background) - 2)
+				SetTextAlignment(ui.imageLoaders[imageLoader].removeButton.label, 1)
+				SetTextSize(ui.imageLoaders[imageLoader].removeButton.label, defaultTextSize#)
+				SetTextPosition(ui.imageLoaders[imageLoader].removeButton.label, GetSpriteXByOffset(ui.imageLoaders[imageLoader].removeButton.background), GetSpriteYByOffset(ui.imageLoaders[imageLoader].removeButton.background) - (GetTextTotalHeight(ui.imageLoaders[imageLoader].removeButton.label) / 2))
+				SetTextDepth(ui.imageLoaders[imageLoader].removeButton.label, GetSpriteDepth(ui.panels[a].background) - 3)
+				
+				slider = 1
+				ui.sliders[slider].name$ = "OrbitingSpriteHeight"
+				ui.sliders[slider].min# = 0
+				ui.sliders[slider].max# = 500
+				//ui.sliders[slider].value# = 100
+				ui.sliders[slider].activeTrackFromCentre = 0
+				ui.sliders[slider].rangeSlider = 0
+				//SetSpritePosition(ui.sliders[slider].container, GetSpriteX(ui.panels[a].background) + 20, GetSpriteY(ui.panels[a].background) + 10 + 40)
+				SetSpritePosition(ui.sliders[slider].container, GetSpriteX(ui.panels[a].background) + 20, GetSpriteY(ui.imageLoaders[1].container) + GetSpriteHeight(ui.imageLoaders[1].container) + 10)
+				SetSpriteSize(ui.sliders[slider].container, 260, 37)
+				SetSpriteColor(ui.sliders[slider].container, 255, 255, 0, 0)
+				SetSpriteDepth(ui.sliders[slider].container, GetSpriteDepth(ui.panels[a].background))
+				SetTextString(ui.sliders[slider].label, "Orbiting Sprite Height")
+				SetTextSize(ui.sliders[slider].label, defaultTextSize#)
+				SetTextDepth(ui.sliders[slider].label, GetSpriteDepth(ui.panels[a].background) - 2)
+				SetTextPosition(ui.sliders[slider].label, GetSpriteX(ui.sliders[slider].container), GetSpriteY(ui.sliders[slider].container))
+				SetEditBoxText(ui.sliders[slider].editbox, str(ui.sliders[slider].value#, 0))
+				SetEditBoxPosition(ui.sliders[slider].editbox, GetSpriteX(ui.sliders[slider].container) + 260 - 50, GetSpriteY(ui.sliders[slider].container))
+				SetEditBoxSize(ui.sliders[slider].editbox, 45, GetEditBoxHeight(ui.sliders[slider].editbox))
+				SetEditBoxBorderSize(ui.sliders[slider].editbox, 1)
+				SetEditBoxBorderColor(ui.sliders[slider].editbox, 90, 88, 91, 255)
+				SetEditBoxInputType(ui.sliders[slider].editbox, 1)
+				SetEditBoxBackgroundColor(ui.sliders[slider].editbox, 61, 57, 60, 255)
+				SetEditBoxTextColor(ui.sliders[slider].editbox, 255, 255, 255)
+				SetEditBoxDepth(ui.sliders[slider].editbox, GetSpriteDepth(ui.panels[a].background) - 2)
+				SetSpritePosition(ui.sliders[slider].inactiveTrack, GetSpriteX(ui.sliders[slider].container) + 7.5, GetSpriteY(ui.sliders[slider].container) + 27)
+				SetSpriteSize(ui.sliders[slider].inactiveTrack, 260 - 15, 4)
+				SetSpriteColor(ui.sliders[slider].inactiveTrack, 61, 57, 60, 255)
+				SetSpriteDepth(ui.sliders[slider].inactiveTrack, GetSpriteDepth(ui.panels[a].background) - 2)
+				SetSpriteSize(ui.sliders[slider].handle, 15, 15)
+				percentage# = ((ui.sliders[slider].value# - ui.sliders[slider].min#) / (ui.sliders[slider].max# - ui.sliders[slider].min#)) * 100.0
+				handleX# = ((GetSpriteWidth(ui.sliders[slider].inactiveTrack) - GetSpriteWidth(ui.sliders[slider].handle)) / 100.0) * percentage#
+				SetSpritePositionByOffset(ui.sliders[slider].handle, GetSpriteX(ui.sliders[slider].inactiveTrack) + (GetSpriteWidth(ui.sliders[slider].handle) / 2) + handleX#, GetSpriteYByOffset(ui.sliders[slider].inactiveTrack))
+				SetSpriteColor(ui.sliders[slider].handle, 147, 145, 147, 255)
+				SetSpriteDepth(ui.sliders[slider].handle, GetSpriteDepth(ui.panels[a].background) - 4)
+				if (ui.sliders[slider].activeTrackFromCentre = 0)
+					SetSpriteSize(ui.sliders[slider].activeTrack, GetSpriteXByOffset(ui.sliders[slider].handle) - GetSpriteX(ui.sliders[slider].inactiveTrack), 4)
+					SetSpritePosition(ui.sliders[slider].activeTrack, GetSpriteX(ui.sliders[slider].container) + 7.5, GetSpriteY(ui.sliders[slider].container) + 27)
+				else
+					SetSpriteSize(ui.sliders[slider].activeTrack, abs(GetSpriteXByOffset(ui.sliders[slider].handle) - GetSpriteXByOffset(ui.sliders[slider].inactiveTrack)), 4)
+					if (ui.sliders[slider].value# < 0)
+						SetSpritePosition(ui.sliders[slider].activeTrack, GetSpriteXByOffset(ui.sliders[slider].inactiveTrack) - GetSpriteWidth(ui.sliders[slider].activeTrack), GetSpriteY(ui.sliders[slider].container) + 27)
+					else
+						SetSpritePosition(ui.sliders[slider].activeTrack, GetSpriteXByOffset(ui.sliders[slider].inactiveTrack), GetSpriteY(ui.sliders[slider].container) + 27)
+					endif	
+				endif
+				SetSpriteColor(ui.sliders[slider].activeTrack, 98, 96, 98, 255)
+				SetSpriteDepth(ui.sliders[slider].activeTrack, GetSpriteDepth(ui.panels[a].background) - 3)
+				
+				slider = 2
 				ui.sliders[slider].name$ = "RadiusX"
 				ui.sliders[slider].min# = 0
 				ui.sliders[slider].max# = 500
-				ui.sliders[slider].value# = 100
+				//ui.sliders[slider].value# = 100
 				ui.sliders[slider].activeTrackFromCentre = 0
 				ui.sliders[slider].rangeSlider = 0
-				SetSpritePosition(ui.sliders[slider].container, GetSpriteX(ui.panels[a].background) + 20, GetSpriteY(ui.panels[a].background) + 10 + 40)
+				//SetSpritePosition(ui.sliders[slider].container, GetSpriteX(ui.panels[a].background) + 20, GetSpriteY(ui.panels[a].background) + 10 + 40)
+				SetSpritePosition(ui.sliders[slider].container, GetSpriteX(ui.panels[a].background) + 20, GetSpriteY(ui.sliders[slider - 1].container) + GetSpriteHeight(ui.sliders[slider - 1].container) + 10)
 				SetSpriteSize(ui.sliders[slider].container, 260, 37)
 				SetSpriteColor(ui.sliders[slider].container, 255, 255, 0, 0)
 				SetSpriteDepth(ui.sliders[slider].container, GetSpriteDepth(ui.panels[a].background))
@@ -861,11 +1304,11 @@ function UpdateUIListener()
 				SetSpriteColor(ui.sliders[slider].activeTrack, 98, 96, 98, 255)
 				SetSpriteDepth(ui.sliders[slider].activeTrack, GetSpriteDepth(ui.panels[a].background) - 3)
 				
-				slider = 1
+				slider = 3
 				ui.sliders[slider].name$ = "RadiusY"
 				ui.sliders[slider].min# = 0
 				ui.sliders[slider].max# = 500
-				ui.sliders[slider].value# = 100
+				//ui.sliders[slider].value# = 100
 				ui.sliders[slider].activeTrackFromCentre = 0
 				ui.sliders[slider].rangeSlider = 0
 				SetSpritePosition(ui.sliders[slider].container, GetSpriteX(ui.panels[a].background) + 20, GetSpriteY(ui.sliders[slider - 1].container) + GetSpriteHeight(ui.sliders[slider - 1].container) + 10)
@@ -909,11 +1352,11 @@ function UpdateUIListener()
 				SetSpriteColor(ui.sliders[slider].activeTrack, 98, 96, 98, 255)
 				SetSpriteDepth(ui.sliders[slider].activeTrack, GetSpriteDepth(ui.panels[a].background) - 3)
 				
-				slider = 2
+				slider = 4
 				ui.sliders[slider].name$ = "AngleStepSize"
 				ui.sliders[slider].min# = -10
 				ui.sliders[slider].max# = 10
-				ui.sliders[slider].value# = 2
+				//ui.sliders[slider].value# = 2
 				ui.sliders[slider].activeTrackFromCentre = 1
 				ui.sliders[slider].rangeSlider = 0
 				SetSpritePosition(ui.sliders[slider].container, GetSpriteX(ui.panels[a].background) + 20, GetSpriteY(ui.sliders[slider - 1].container) + GetSpriteHeight(ui.sliders[slider - 1].container) + 10)
@@ -958,14 +1401,58 @@ function UpdateUIListener()
 				SetSpriteDepth(ui.sliders[slider].activeTrack, GetSpriteDepth(ui.panels[a].background) - 3)
 			endif
 			if (selectedCategory = CATEGORY_2D_PARTICLES)
+				imageLoader = 0
+				ui.imageLoaders[imageLoader].name$ = "ParticleImage"
+				SetSpritePosition(ui.imageLoaders[imageLoader].container, GetSpriteX(ui.panels[a].background) + 20, GetSpriteY(ui.panels[a].background) + 10 + 40)
+				SetSpriteSize(ui.imageLoaders[imageLoader].container, 260, 100)
+				SetSpriteColor(ui.imageLoaders[imageLoader].container, 255, 255, 0, 0)
+				SetSpriteDepth(ui.imageLoaders[imageLoader].container, GetSpriteDepth(ui.panels[a].background))
+				SetTextSize(ui.imageLoaders[imageLoader].label, defaultTextSize#)
+				SetTextString(ui.imageLoaders[imageLoader].label, "Particle Image")
+				SetTextPosition(ui.imageLoaders[imageLoader].label, GetSpriteX(ui.imageLoaders[imageLoader].container), GetSpriteY(ui.imageLoaders[imageLoader].container))
+				SetTextDepth(ui.imageLoaders[imageLoader].label, GetSpriteDepth(ui.panels[a].background) - 2)
+				SetSpritePosition(ui.imageLoaders[imageLoader].imageBorder, GetSpriteX(ui.imageLoaders[imageLoader].container), GetSpriteY(ui.imageLoaders[imageLoader].container) + 20)
+				SetSpriteSize(ui.imageLoaders[imageLoader].imageBorder, 100, 80)
+				SetSpriteColor(ui.imageLoaders[imageLoader].imageBorder, 116, 116, 116, 255)
+				SetSpriteDepth(ui.imageLoaders[imageLoader].imageBorder, GetSpriteDepth(ui.panels[a].background) - 2)
+				SetSpritePositionByOffset(ui.imageLoaders[imageLoader].imageBackground, GetSpriteXByOffset(ui.imageLoaders[imageLoader].imageBorder), GetSpriteYByOffset(ui.imageLoaders[imageLoader].imageBorder))
+				SetSpriteSize(ui.imageLoaders[imageLoader].imageBackground, 98, 78)
+				SetSpriteColor(ui.imageLoaders[imageLoader].imageBackground, 28, 24, 27, 255)
+				SetSpriteDepth(ui.imageLoaders[imageLoader].imageBackground, GetSpriteDepth(ui.panels[a].background) - 3)
+				SetSpritePositionByOffset(ui.imageLoaders[imageLoader].image, GetSpriteXByOffset(ui.imageLoaders[imageLoader].imageBorder), GetSpriteYByOffset(ui.imageLoaders[imageLoader].imageBorder))
+				if (ui.imageLoaders[imageLoader].value > 0)
+					SetSpriteSize(ui.imageLoaders[imageLoader].image, 70, 70)
+				else
+					SetSpriteSize(ui.imageLoaders[imageLoader].image, 50, 50)
+				endif
+				SetSpriteImage(ui.imageLoaders[imageLoader].image, ui.imageLoaders[imageLoader].value)
+				SetSpriteDepth(ui.imageLoaders[imageLoader].image, GetSpriteDepth(ui.panels[a].background) - 4)
+				SetSpriteSize(ui.imageLoaders[imageLoader].importButton.background, 145, 20)
+				SetSpritePosition(ui.imageLoaders[imageLoader].importButton.background, GetSpriteX(ui.imageLoaders[imageLoader].imageBorder) + GetSpriteWidth(ui.imageLoaders[imageLoader].imageBorder) + 10, GetSpriteY(ui.imageLoaders[imageLoader].imageBorder) + 15)
+				SetSpriteColor(ui.imageLoaders[imageLoader].importButton.background, 93, 89, 92, 255)
+				SetSpriteDepth(ui.imageLoaders[imageLoader].importButton.background, GetSpriteDepth(ui.panels[a].background) - 2)
+				SetTextAlignment(ui.imageLoaders[imageLoader].importButton.label, 1)
+				SetTextSize(ui.imageLoaders[imageLoader].importButton.label, defaultTextSize#)
+				SetTextPosition(ui.imageLoaders[imageLoader].importButton.label, GetSpriteXByOffset(ui.imageLoaders[imageLoader].importButton.background), GetSpriteYByOffset(ui.imageLoaders[imageLoader].importButton.background) - (GetTextTotalHeight(ui.imageLoaders[imageLoader].importButton.label) / 2))
+				SetTextDepth(ui.imageLoaders[imageLoader].importButton.label, GetSpriteDepth(ui.panels[a].background) - 3)
+				SetSpriteSize(ui.imageLoaders[imageLoader].removeButton.background, 145, 20)
+				SetSpritePosition(ui.imageLoaders[imageLoader].removeButton.background, GetSpriteX(ui.imageLoaders[imageLoader].imageBorder) + GetSpriteWidth(ui.imageLoaders[imageLoader].imageBorder) + 10, GetSpriteY(ui.imageLoaders[imageLoader].imageBorder) + 45)
+				SetSpriteColor(ui.imageLoaders[imageLoader].removeButton.background, 93, 89, 92, 255)
+				SetSpriteDepth(ui.imageLoaders[imageLoader].removeButton.background, GetSpriteDepth(ui.panels[a].background) - 2)
+				SetTextAlignment(ui.imageLoaders[imageLoader].removeButton.label, 1)
+				SetTextSize(ui.imageLoaders[imageLoader].removeButton.label, defaultTextSize#)
+				SetTextPosition(ui.imageLoaders[imageLoader].removeButton.label, GetSpriteXByOffset(ui.imageLoaders[imageLoader].removeButton.background), GetSpriteYByOffset(ui.imageLoaders[imageLoader].removeButton.background) - (GetTextTotalHeight(ui.imageLoaders[imageLoader].removeButton.label) / 2))
+				SetTextDepth(ui.imageLoaders[imageLoader].removeButton.label, GetSpriteDepth(ui.panels[a].background) - 3)
+								
 				slider = 0
 				ui.sliders[slider].name$ = "ParticleSize"
 				ui.sliders[slider].min# = 1
 				ui.sliders[slider].max# = 200
-				ui.sliders[slider].value# = 50
+				//ui.sliders[slider].value# = 50
 				ui.sliders[slider].activeTrackFromCentre = 0
 				ui.sliders[slider].rangeSlider = 0
-				SetSpritePosition(ui.sliders[slider].container, GetSpriteX(ui.panels[a].background) + 20, GetSpriteY(ui.panels[a].background) + 10 + 40)
+				//SetSpritePosition(ui.sliders[slider].container, GetSpriteX(ui.panels[a].background) + 20, GetSpriteY(ui.panels[a].background) + 10 + 40)
+				SetSpritePosition(ui.sliders[slider].container, GetSpriteX(ui.panels[a].background) + 20, GetSpriteY(ui.imageLoaders[0].container) + 10)
 				SetSpriteSize(ui.sliders[slider].container, 260, 37)
 				SetSpriteColor(ui.sliders[slider].container, 255, 255, 0, 0)
 				SetSpriteDepth(ui.sliders[slider].container, GetSpriteDepth(ui.panels[a].background))
@@ -1010,7 +1497,7 @@ function UpdateUIListener()
 				ui.sliders[slider].name$ = "AngleRange"
 				ui.sliders[slider].min# = 0
 				ui.sliders[slider].max# = 360
-				ui.sliders[slider].value# = 40
+				//ui.sliders[slider].value# = 20
 				ui.sliders[slider].activeTrackFromCentre = 0
 				ui.sliders[slider].rangeSlider = 0
 				SetSpritePosition(ui.sliders[slider].container, GetSpriteX(ui.panels[a].background) + 20, GetSpriteY(ui.sliders[slider - 1].container) + GetSpriteHeight(ui.sliders[slider - 1].container) + 10)
@@ -1058,7 +1545,7 @@ function UpdateUIListener()
 				ui.sliders[slider].name$ = "DirectionX"
 				ui.sliders[slider].min# = -500
 				ui.sliders[slider].max# = 500
-				ui.sliders[slider].value# = 0
+				//ui.sliders[slider].value# = 0
 				ui.sliders[slider].activeTrackFromCentre = 1
 				ui.sliders[slider].rangeSlider = 0
 				SetSpritePosition(ui.sliders[slider].container, GetSpriteX(ui.panels[a].background) + 20, GetSpriteY(ui.sliders[slider - 1].container) + GetSpriteHeight(ui.sliders[slider - 1].container) + 10)
@@ -1106,7 +1593,7 @@ function UpdateUIListener()
 				ui.sliders[slider].name$ = "DirectionY"
 				ui.sliders[slider].min# = -500
 				ui.sliders[slider].max# = 500
-				ui.sliders[slider].value# = -15
+				//ui.sliders[slider].value# = -15
 				ui.sliders[slider].activeTrackFromCentre = 1
 				ui.sliders[slider].rangeSlider = 0
 				SetSpritePosition(ui.sliders[slider].container, GetSpriteX(ui.panels[a].background) + 20, GetSpriteY(ui.sliders[slider - 1].container) + GetSpriteHeight(ui.sliders[slider - 1].container) + 10)
@@ -1154,7 +1641,7 @@ function UpdateUIListener()
 				ui.sliders[slider].name$ = "Frequency"
 				ui.sliders[slider].min# = 1
 				ui.sliders[slider].max# = 2000
-				ui.sliders[slider].value# = 100
+				//ui.sliders[slider].value# = 100
 				ui.sliders[slider].activeTrackFromCentre = 0
 				ui.sliders[slider].rangeSlider = 0
 				SetSpritePosition(ui.sliders[slider].container, GetSpriteX(ui.panels[a].background) + 20, GetSpriteY(ui.sliders[slider - 1].container) + GetSpriteHeight(ui.sliders[slider - 1].container) + 10)
@@ -1202,7 +1689,7 @@ function UpdateUIListener()
 				ui.sliders[slider].name$ = "ParticleLife"
 				ui.sliders[slider].min# = 0
 				ui.sliders[slider].max# = 20
-				ui.sliders[slider].value# = 6
+				//ui.sliders[slider].value# = 6
 				ui.sliders[slider].activeTrackFromCentre = 0
 				ui.sliders[slider].rangeSlider = 0
 				SetSpritePosition(ui.sliders[slider].container, GetSpriteX(ui.panels[a].background) + 20, GetSpriteY(ui.sliders[slider - 1].container) + GetSpriteHeight(ui.sliders[slider - 1].container) + 10)
@@ -1249,9 +1736,9 @@ function UpdateUIListener()
 				slider = 6
 				ui.sliders[slider].name$ = "VelocityRange"
 				ui.sliders[slider].min# = 0
-				ui.sliders[slider].minValue# = 2
+				//ui.sliders[slider].minValue# = 2
 				ui.sliders[slider].max# = 20
-				ui.sliders[slider].maxValue# = 4
+				//ui.sliders[slider].maxValue# = 4
 				ui.sliders[slider].value# = 0
 				ui.sliders[slider].activeTrackFromCentre = 0
 				ui.sliders[slider].rangeSlider = 1
@@ -1348,9 +1835,9 @@ function UpdateUIListener()
 				slider = 7
 				ui.sliders[slider].name$ = "StartZoneX"
 				ui.sliders[slider].min# = -400
-				ui.sliders[slider].minValue# = -30
+				//ui.sliders[slider].minValue# = -30
 				ui.sliders[slider].max# = 400
-				ui.sliders[slider].maxValue# = 30
+				//ui.sliders[slider].maxValue# = 30
 				ui.sliders[slider].value# = 0
 				ui.sliders[slider].activeTrackFromCentre = 0
 				ui.sliders[slider].rangeSlider = 1
@@ -1448,9 +1935,9 @@ function UpdateUIListener()
 				slider = 8
 				ui.sliders[slider].name$ = "StartZoneY"
 				ui.sliders[slider].min# = -400
-				ui.sliders[slider].minValue# = -20
+				//ui.sliders[slider].minValue# = -20
 				ui.sliders[slider].max# = 400
-				ui.sliders[slider].maxValue# = 20
+				//ui.sliders[slider].maxValue# = 20
 				ui.sliders[slider].value# = 0
 				ui.sliders[slider].activeTrackFromCentre = 0
 				ui.sliders[slider].rangeSlider = 1
@@ -1568,7 +2055,7 @@ function UpdateUIListener()
 				
 				checkbox = 0
 				ui.checkboxes[checkbox].name$ = "DebugShowStartingZone"
-				ui.checkboxes[checkbox].value = 1
+				//ui.checkboxes[checkbox].value = 0
 				//SetSpritePosition(ui.checkboxes[checkbox].container, GetSpriteX(ui.panels[a].background) + 20, GetSpriteY(ui.checkboxes[checkbox - 1].container) + GetSpriteHeight(ui.checkboxes[checkbox - 1].container) + 14)
 				SetSpritePosition(ui.checkboxes[checkbox].container, GetSpriteX(ui.panels[a].background) + 20, GetSpriteY(ui.sliders[8].container) + GetSpriteHeight(ui.sliders[8].container) + 14)
 				SetSpriteSize(ui.checkboxes[checkbox].container, 260, 20)
@@ -1576,8 +2063,8 @@ function UpdateUIListener()
 				SetSpriteDepth(ui.checkboxes[checkbox].container, GetSpriteDepth(ui.panels[a].background))
 				FixSpriteToScreen(ui.checkboxes[checkbox].container, 1)
 				SetSpriteSize(ui.checkboxes[checkbox].background, 15, 15)
-				//SetSpriteColor(ui.checkboxes[checkbox].background, 90, 90, 90, 255)
-				SetSpriteColor(ui.checkboxes[checkbox].background, 211, 157, 5, 255)
+				SetSpriteColor(ui.checkboxes[checkbox].background, 90, 90, 90, 255)
+				//SetSpriteColor(ui.checkboxes[checkbox].background, 211, 157, 5, 255)
 				SetSpriteDepth(ui.checkboxes[checkbox].background, GetSpriteDepth(ui.checkboxes[checkbox].container) - 2)
 				SetSpritePosition(ui.checkboxes[checkbox].background, GetSpriteX(ui.checkboxes[checkbox].container), GetSpriteY(ui.checkboxes[checkbox].container))
 				FixSpriteToScreen(ui.checkboxes[checkbox].background, 1)
@@ -1621,113 +2108,166 @@ function UpdateUIListener()
 				//FixSpriteToScreen(ui.panels[a].subHeaders[subHeader].divider, 1)
 				
 				for keyFrame = 0 to particlesKeyFrames.length
-					particlesKeyFrames[keyFrame].alphaMin# = 0
-					particlesKeyFrames[keyFrame].alphaMax# = 255
-					particlesKeyFrames[keyFrame].blueMin# = 0
-					particlesKeyFrames[keyFrame].blueMax# = 255
-					particlesKeyFrames[keyFrame].greenMin# = 0
-					particlesKeyFrames[keyFrame].greenMax# = 255
-					particlesKeyFrames[keyFrame].redMin# = 0
-					particlesKeyFrames[keyFrame].redMax# = 255
-					particlesKeyFrames[keyFrame].scaleMin# = 0
-					particlesKeyFrames[keyFrame].scaleMax# = 255
-					particlesKeyFrames[keyFrame].timeMin# = 0
-					particlesKeyFrames[keyFrame].timeMax# = 999
-					particlesKeyFrames[keyFrame].container = CreateSprite(0)
-					SetSpriteSize(particlesKeyFrames[keyFrame].container, 260, 38)
-					if (keyFrame = 0)
-						SetSpritePosition(particlesKeyFrames[keyFrame].container, GetSpriteX(ui.panels[a].background) + 20, GetSpriteY(ui.panels[a].subHeaders[0].container) + GetSpriteHeight(ui.panels[a].subHeaders[0].container) + 10)
-					else
-						SetSpritePosition(particlesKeyFrames[keyFrame].container, GetSpriteX(ui.panels[a].background) + 20, GetSpriteY(particlesKeyFrames[keyFrame - 1].container) + GetSpriteHeight(particlesKeyFrames[keyFrame - 1].container) + 12)
+					if (particlesKeyFrames[keyFrame].group$ = "Color")
+						particlesKeyFrames[keyFrame].alphaMin# = 0
+						particlesKeyFrames[keyFrame].alphaMax# = 255
+						particlesKeyFrames[keyFrame].blueMin# = 0
+						particlesKeyFrames[keyFrame].blueMax# = 255
+						particlesKeyFrames[keyFrame].greenMin# = 0
+						particlesKeyFrames[keyFrame].greenMax# = 255
+						particlesKeyFrames[keyFrame].redMin# = 0
+						particlesKeyFrames[keyFrame].redMax# = 255
+						particlesKeyFrames[keyFrame].timeMin# = 0
+						particlesKeyFrames[keyFrame].timeMax# = 999
+						particlesKeyFrames[keyFrame].container = CreateSprite(0)
+						SetSpriteSize(particlesKeyFrames[keyFrame].container, 260, 38)
+						if (keyFrame = 0)
+							SetSpritePosition(particlesKeyFrames[keyFrame].container, GetSpriteX(ui.panels[a].background) + 20, GetSpriteY(ui.panels[a].subHeaders[0].container) + GetSpriteHeight(ui.panels[a].subHeaders[0].container) + 10)
+						else
+							SetSpritePosition(particlesKeyFrames[keyFrame].container, GetSpriteX(ui.panels[a].background) + 20, GetSpriteY(particlesKeyFrames[keyFrame - 1].container) + GetSpriteHeight(particlesKeyFrames[keyFrame - 1].container) + 12)
+						endif
+						SetSpriteColor(particlesKeyFrames[keyFrame].container, 255, 0, 0, 0)
+						SetSpriteDepth(particlesKeyFrames[keyFrame].container, GetSpriteDepth(ui.panels[a].background))
+						FixSpriteToScreen(particlesKeyFrames[keyFrame].container, 1)
+						particlesKeyFrames[keyFrame].timeLabel = CreateText("Time")
+						SetTextSize(particlesKeyFrames[keyFrame].timeLabel, defaultTextSize#)
+						SetTextPosition(particlesKeyFrames[keyFrame].timeLabel, GetSpriteX(particlesKeyFrames[keyFrame].container) + (48 * 0), GetSpriteY(particlesKeyFrames[keyFrame].container))
+						SetTextDepth(particlesKeyFrames[keyFrame].timeLabel, GetSpriteDepth(ui.panels[a].background) - 2)
+						FixTextToScreen(particlesKeyFrames[keyFrame].timeLabel, 1)
+						particlesKeyFrames[keyFrame].timeEditbox = CreateEditBox()
+						SetEditBoxText(particlesKeyFrames[keyFrame].timeEditbox, str(particlesKeyFrames[keyFrame].timeValue#, 2))
+						SetEditBoxSize(particlesKeyFrames[keyFrame].timeEditbox, 41, GetEditBoxHeight(particlesKeyFrames[keyFrame].timeEditbox))
+						SetEditBoxPosition(particlesKeyFrames[keyFrame].timeEditbox, GetSpriteX(particlesKeyFrames[keyFrame].container) + (48 * 0), GetSpriteY(particlesKeyFrames[keyFrame].container) + GetSpriteHeight(particlesKeyFrames[keyFrame].container) - GetEditBoxHeight(particlesKeyFrames[keyFrame].timeEditbox))
+						SetEditBoxBorderSize(particlesKeyFrames[keyFrame].timeEditbox, 1)
+						SetEditBoxBorderColor(particlesKeyFrames[keyFrame].timeEditbox, 90, 88, 91, 255)
+						SetEditBoxInputType(particlesKeyFrames[keyFrame].timeEditbox, 1)
+						SetEditBoxBackgroundColor(particlesKeyFrames[keyFrame].timeEditbox, 61, 57, 60, 255)
+						SetEditBoxTextColor(particlesKeyFrames[keyFrame].timeEditbox, 255, 255, 255)
+						SetEditBoxDepth(particlesKeyFrames[keyFrame].timeEditbox, GetSpriteDepth(ui.panels[a].background) - 2)
+						FixEditBoxToScreen(particlesKeyFrames[keyFrame].timeEditbox, 1)
+						particlesKeyFrames[keyFrame].redLabel = CreateText("Red")
+						SetTextSize(particlesKeyFrames[keyFrame].redLabel, defaultTextSize#)
+						SetTextPosition(particlesKeyFrames[keyFrame].redLabel, GetSpriteX(particlesKeyFrames[keyFrame].container) + (48 * 1), GetSpriteY(particlesKeyFrames[keyFrame].container))
+						SetTextDepth(particlesKeyFrames[keyFrame].redLabel, GetSpriteDepth(ui.panels[a].background) - 2)
+						FixTextToScreen(particlesKeyFrames[keyFrame].redLabel, 1)
+						particlesKeyFrames[keyFrame].redEditbox = CreateEditBox()
+						SetEditBoxText(particlesKeyFrames[keyFrame].redEditbox, str(particlesKeyFrames[keyFrame].redValue#, 0))
+						SetEditBoxSize(particlesKeyFrames[keyFrame].redEditbox, 41, GetEditBoxHeight(particlesKeyFrames[keyFrame].redEditbox))
+						SetEditBoxPosition(particlesKeyFrames[keyFrame].redEditbox, GetSpriteX(particlesKeyFrames[keyFrame].container) + (48 * 1), GetSpriteY(particlesKeyFrames[keyFrame].container) + GetSpriteHeight(particlesKeyFrames[keyFrame].container) - GetEditBoxHeight(particlesKeyFrames[keyFrame].redEditbox))
+						SetEditBoxBorderSize(particlesKeyFrames[keyFrame].redEditbox, 1)
+						SetEditBoxBorderColor(particlesKeyFrames[keyFrame].redEditbox, 90, 88, 91, 255)
+						SetEditBoxInputType(particlesKeyFrames[keyFrame].redEditbox, 1)
+						SetEditBoxBackgroundColor(particlesKeyFrames[keyFrame].redEditbox, 61, 57, 60, 255)
+						SetEditBoxTextColor(particlesKeyFrames[keyFrame].redEditbox, 255, 255, 255)
+						SetEditBoxDepth(particlesKeyFrames[keyFrame].redEditbox, GetSpriteDepth(ui.panels[a].background) - 2)
+						FixEditBoxToScreen(particlesKeyFrames[keyFrame].redEditbox, 1)
+						particlesKeyFrames[keyFrame].greenLabel = CreateText("Green")
+						SetTextSize(particlesKeyFrames[keyFrame].greenLabel, defaultTextSize#)
+						SetTextPosition(particlesKeyFrames[keyFrame].greenLabel, GetSpriteX(particlesKeyFrames[keyFrame].container) + (48 * 2), GetSpriteY(particlesKeyFrames[keyFrame].container))
+						SetTextDepth(particlesKeyFrames[keyFrame].greenLabel, GetSpriteDepth(ui.panels[a].background) - 2)
+						FixTextToScreen(particlesKeyFrames[keyFrame].greenLabel, 1)
+						particlesKeyFrames[keyFrame].greenEditbox = CreateEditBox()
+						SetEditBoxText(particlesKeyFrames[keyFrame].greenEditbox, str(particlesKeyFrames[keyFrame].greenValue#, 0))
+						SetEditBoxSize(particlesKeyFrames[keyFrame].greenEditbox, 41, GetEditBoxHeight(particlesKeyFrames[keyFrame].greenEditbox))
+						SetEditBoxPosition(particlesKeyFrames[keyFrame].greenEditbox, GetSpriteX(particlesKeyFrames[keyFrame].container) + (48 * 2), GetSpriteY(particlesKeyFrames[keyFrame].container) + GetSpriteHeight(particlesKeyFrames[keyFrame].container) - GetEditBoxHeight(particlesKeyFrames[keyFrame].greenEditbox))
+						SetEditBoxBorderSize(particlesKeyFrames[keyFrame].greenEditbox, 1)
+						SetEditBoxBorderColor(particlesKeyFrames[keyFrame].greenEditbox, 90, 88, 91, 255)
+						SetEditBoxInputType(particlesKeyFrames[keyFrame].greenEditbox, 1)
+						SetEditBoxBackgroundColor(particlesKeyFrames[keyFrame].greenEditbox, 61, 57, 60, 255)
+						SetEditBoxTextColor(particlesKeyFrames[keyFrame].greenEditbox, 255, 255, 255)
+						SetEditBoxDepth(particlesKeyFrames[keyFrame].greenEditbox, GetSpriteDepth(ui.panels[a].background) - 2)
+						FixEditBoxToScreen(particlesKeyFrames[keyFrame].greenEditbox, 1)
+						particlesKeyFrames[keyFrame].blueLabel = CreateText("Blue")
+						SetTextSize(particlesKeyFrames[keyFrame].blueLabel, defaultTextSize#)
+						SetTextPosition(particlesKeyFrames[keyFrame].blueLabel, GetSpriteX(particlesKeyFrames[keyFrame].container) + (48 * 3), GetSpriteY(particlesKeyFrames[keyFrame].container))
+						SetTextDepth(particlesKeyFrames[keyFrame].blueLabel, GetSpriteDepth(ui.panels[a].background) - 2)
+						FixTextToScreen(particlesKeyFrames[keyFrame].blueLabel, 1)
+						particlesKeyFrames[keyFrame].blueEditbox = CreateEditBox()
+						SetEditBoxText(particlesKeyFrames[keyFrame].blueEditbox, str(particlesKeyFrames[keyFrame].blueValue#, 0))
+						SetEditBoxSize(particlesKeyFrames[keyFrame].blueEditbox, 41, GetEditBoxHeight(particlesKeyFrames[keyFrame].blueEditbox))
+						SetEditBoxPosition(particlesKeyFrames[keyFrame].blueEditbox, GetSpriteX(particlesKeyFrames[keyFrame].container) + (48 * 3), GetSpriteY(particlesKeyFrames[keyFrame].container) + GetSpriteHeight(particlesKeyFrames[keyFrame].container) - GetEditBoxHeight(particlesKeyFrames[keyFrame].blueEditbox))
+						SetEditBoxBorderSize(particlesKeyFrames[keyFrame].blueEditbox, 1)
+						SetEditBoxBorderColor(particlesKeyFrames[keyFrame].blueEditbox, 90, 88, 91, 255)
+						SetEditBoxInputType(particlesKeyFrames[keyFrame].blueEditbox, 1)
+						SetEditBoxBackgroundColor(particlesKeyFrames[keyFrame].blueEditbox, 61, 57, 60, 255)
+						SetEditBoxTextColor(particlesKeyFrames[keyFrame].blueEditbox, 255, 255, 255)
+						SetEditBoxDepth(particlesKeyFrames[keyFrame].blueEditbox, GetSpriteDepth(ui.panels[a].background) - 2)
+						FixEditBoxToScreen(particlesKeyFrames[keyFrame].blueEditbox, 1)
+						particlesKeyFrames[keyFrame].alphaLabel = CreateText("Alpha")
+						SetTextSize(particlesKeyFrames[keyFrame].alphaLabel, defaultTextSize#)
+						SetTextPosition(particlesKeyFrames[keyFrame].alphaLabel, GetSpriteX(particlesKeyFrames[keyFrame].container) + (48 * 4), GetSpriteY(particlesKeyFrames[keyFrame].container))
+						SetTextDepth(particlesKeyFrames[keyFrame].alphaLabel, GetSpriteDepth(ui.panels[a].background) - 2)
+						FixTextToScreen(particlesKeyFrames[keyFrame].alphaLabel, 1)
+						particlesKeyFrames[keyFrame].alphaEditbox = CreateEditBox()
+						SetEditBoxText(particlesKeyFrames[keyFrame].alphaEditbox, str(particlesKeyFrames[keyFrame].alphaValue#, 0))
+						SetEditBoxSize(particlesKeyFrames[keyFrame].alphaEditbox, 41, GetEditBoxHeight(particlesKeyFrames[keyFrame].alphaEditbox))
+						SetEditBoxPosition(particlesKeyFrames[keyFrame].alphaEditbox, GetSpriteX(particlesKeyFrames[keyFrame].container) + (48 * 4), GetSpriteY(particlesKeyFrames[keyFrame].container) + GetSpriteHeight(particlesKeyFrames[keyFrame].container) - GetEditBoxHeight(particlesKeyFrames[keyFrame].alphaEditbox))
+						SetEditBoxBorderSize(particlesKeyFrames[keyFrame].alphaEditbox, 1)
+						SetEditBoxBorderColor(particlesKeyFrames[keyFrame].alphaEditbox, 90, 88, 91, 255)
+						SetEditBoxInputType(particlesKeyFrames[keyFrame].alphaEditbox, 1)
+						SetEditBoxBackgroundColor(particlesKeyFrames[keyFrame].alphaEditbox, 61, 57, 60, 255)
+						SetEditBoxTextColor(particlesKeyFrames[keyFrame].alphaEditbox, 255, 255, 255)
+						SetEditBoxDepth(particlesKeyFrames[keyFrame].alphaEditbox, GetSpriteDepth(ui.panels[a].background) - 2)
+						FixEditBoxToScreen(particlesKeyFrames[keyFrame].alphaEditbox, 1)
+						particlesKeyFrames[keyFrame].deleteIcon = CreateSprite(GetIconImageID("delete"))
+						SetSpriteColor(particlesKeyFrames[keyFrame].deleteIcon, 147, 145, 147, 255)
+						SetSpriteSize(particlesKeyFrames[keyFrame].deleteIcon, 20, 20)
+						SetSpritePosition(particlesKeyFrames[keyFrame].deleteIcon, GetSpriteX(particlesKeyFrames[keyFrame].container) + GetSpriteWidth(particlesKeyFrames[keyFrame].container) - GetSpriteWidth(particlesKeyFrames[keyFrame].deleteIcon), GetEditBoxY(particlesKeyFrames[keyFrame].alphaEditbox) + (GetEditBoxHeight(particlesKeyFrames[keyFrame].alphaEditbox) / 2) - (GetSpriteHeight(particlesKeyFrames[keyFrame].deleteIcon) / 2))
+						FixSpriteToScreen(particlesKeyFrames[keyFrame].deleteIcon, 1)
 					endif
-					SetSpriteColor(particlesKeyFrames[keyFrame].container, 255, 0, 0, 0)
-					SetSpriteDepth(particlesKeyFrames[keyFrame].container, GetSpriteDepth(ui.panels[a].background))
-					FixSpriteToScreen(particlesKeyFrames[keyFrame].container, 1)
-					particlesKeyFrames[keyFrame].timeLabel = CreateText("Time")
-					SetTextSize(particlesKeyFrames[keyFrame].timeLabel, defaultTextSize#)
-					SetTextPosition(particlesKeyFrames[keyFrame].timeLabel, GetSpriteX(particlesKeyFrames[keyFrame].container) + (48 * 0), GetSpriteY(particlesKeyFrames[keyFrame].container))
-					SetTextDepth(particlesKeyFrames[keyFrame].timeLabel, GetSpriteDepth(ui.panels[a].background) - 2)
-					FixTextToScreen(particlesKeyFrames[keyFrame].timeLabel, 1)
-					particlesKeyFrames[keyFrame].timeEditbox = CreateEditBox()
-					SetEditBoxText(particlesKeyFrames[keyFrame].timeEditbox, str(particlesKeyFrames[keyFrame].timeValue#, 2))
-					SetEditBoxSize(particlesKeyFrames[keyFrame].timeEditbox, 41, GetEditBoxHeight(particlesKeyFrames[keyFrame].timeEditbox))
-					SetEditBoxPosition(particlesKeyFrames[keyFrame].timeEditbox, GetSpriteX(particlesKeyFrames[keyFrame].container) + (48 * 0), GetSpriteY(particlesKeyFrames[keyFrame].container) + GetSpriteHeight(particlesKeyFrames[keyFrame].container) - GetEditBoxHeight(particlesKeyFrames[keyFrame].timeEditbox))
-					SetEditBoxBorderSize(particlesKeyFrames[keyFrame].timeEditbox, 1)
-					SetEditBoxBorderColor(particlesKeyFrames[keyFrame].timeEditbox, 90, 88, 91, 255)
-					SetEditBoxInputType(particlesKeyFrames[keyFrame].timeEditbox, 1)
-					SetEditBoxBackgroundColor(particlesKeyFrames[keyFrame].timeEditbox, 61, 57, 60, 255)
-					SetEditBoxTextColor(particlesKeyFrames[keyFrame].timeEditbox, 255, 255, 255)
-					SetEditBoxDepth(particlesKeyFrames[keyFrame].timeEditbox, GetSpriteDepth(ui.panels[a].background) - 2)
-					FixEditBoxToScreen(particlesKeyFrames[keyFrame].timeEditbox, 1)
-					particlesKeyFrames[keyFrame].redLabel = CreateText("Red")
-					SetTextSize(particlesKeyFrames[keyFrame].redLabel, defaultTextSize#)
-					SetTextPosition(particlesKeyFrames[keyFrame].redLabel, GetSpriteX(particlesKeyFrames[keyFrame].container) + (48 * 1), GetSpriteY(particlesKeyFrames[keyFrame].container))
-					SetTextDepth(particlesKeyFrames[keyFrame].redLabel, GetSpriteDepth(ui.panels[a].background) - 2)
-					FixTextToScreen(particlesKeyFrames[keyFrame].redLabel, 1)
-					particlesKeyFrames[keyFrame].redEditbox = CreateEditBox()
-					SetEditBoxText(particlesKeyFrames[keyFrame].redEditbox, str(particlesKeyFrames[keyFrame].redValue#, 0))
-					SetEditBoxSize(particlesKeyFrames[keyFrame].redEditbox, 41, GetEditBoxHeight(particlesKeyFrames[keyFrame].redEditbox))
-					SetEditBoxPosition(particlesKeyFrames[keyFrame].redEditbox, GetSpriteX(particlesKeyFrames[keyFrame].container) + (48 * 1), GetSpriteY(particlesKeyFrames[keyFrame].container) + GetSpriteHeight(particlesKeyFrames[keyFrame].container) - GetEditBoxHeight(particlesKeyFrames[keyFrame].redEditbox))
-					SetEditBoxBorderSize(particlesKeyFrames[keyFrame].redEditbox, 1)
-					SetEditBoxBorderColor(particlesKeyFrames[keyFrame].redEditbox, 90, 88, 91, 255)
-					SetEditBoxInputType(particlesKeyFrames[keyFrame].redEditbox, 1)
-					SetEditBoxBackgroundColor(particlesKeyFrames[keyFrame].redEditbox, 61, 57, 60, 255)
-					SetEditBoxTextColor(particlesKeyFrames[keyFrame].redEditbox, 255, 255, 255)
-					SetEditBoxDepth(particlesKeyFrames[keyFrame].redEditbox, GetSpriteDepth(ui.panels[a].background) - 2)
-					FixEditBoxToScreen(particlesKeyFrames[keyFrame].redEditbox, 1)
-					particlesKeyFrames[keyFrame].greenLabel = CreateText("Green")
-					SetTextSize(particlesKeyFrames[keyFrame].greenLabel, defaultTextSize#)
-					SetTextPosition(particlesKeyFrames[keyFrame].greenLabel, GetSpriteX(particlesKeyFrames[keyFrame].container) + (48 * 2), GetSpriteY(particlesKeyFrames[keyFrame].container))
-					SetTextDepth(particlesKeyFrames[keyFrame].greenLabel, GetSpriteDepth(ui.panels[a].background) - 2)
-					FixTextToScreen(particlesKeyFrames[keyFrame].greenLabel, 1)
-					particlesKeyFrames[keyFrame].greenEditbox = CreateEditBox()
-					SetEditBoxText(particlesKeyFrames[keyFrame].greenEditbox, str(particlesKeyFrames[keyFrame].greenValue#, 0))
-					SetEditBoxSize(particlesKeyFrames[keyFrame].greenEditbox, 41, GetEditBoxHeight(particlesKeyFrames[keyFrame].greenEditbox))
-					SetEditBoxPosition(particlesKeyFrames[keyFrame].greenEditbox, GetSpriteX(particlesKeyFrames[keyFrame].container) + (48 * 2), GetSpriteY(particlesKeyFrames[keyFrame].container) + GetSpriteHeight(particlesKeyFrames[keyFrame].container) - GetEditBoxHeight(particlesKeyFrames[keyFrame].greenEditbox))
-					SetEditBoxBorderSize(particlesKeyFrames[keyFrame].greenEditbox, 1)
-					SetEditBoxBorderColor(particlesKeyFrames[keyFrame].greenEditbox, 90, 88, 91, 255)
-					SetEditBoxInputType(particlesKeyFrames[keyFrame].greenEditbox, 1)
-					SetEditBoxBackgroundColor(particlesKeyFrames[keyFrame].greenEditbox, 61, 57, 60, 255)
-					SetEditBoxTextColor(particlesKeyFrames[keyFrame].greenEditbox, 255, 255, 255)
-					SetEditBoxDepth(particlesKeyFrames[keyFrame].greenEditbox, GetSpriteDepth(ui.panels[a].background) - 2)
-					FixEditBoxToScreen(particlesKeyFrames[keyFrame].greenEditbox, 1)
-					particlesKeyFrames[keyFrame].blueLabel = CreateText("Blue")
-					SetTextSize(particlesKeyFrames[keyFrame].blueLabel, defaultTextSize#)
-					SetTextPosition(particlesKeyFrames[keyFrame].blueLabel, GetSpriteX(particlesKeyFrames[keyFrame].container) + (48 * 3), GetSpriteY(particlesKeyFrames[keyFrame].container))
-					SetTextDepth(particlesKeyFrames[keyFrame].blueLabel, GetSpriteDepth(ui.panels[a].background) - 2)
-					FixTextToScreen(particlesKeyFrames[keyFrame].blueLabel, 1)
-					particlesKeyFrames[keyFrame].blueEditbox = CreateEditBox()
-					SetEditBoxText(particlesKeyFrames[keyFrame].blueEditbox, str(particlesKeyFrames[keyFrame].blueValue#, 0))
-					SetEditBoxSize(particlesKeyFrames[keyFrame].blueEditbox, 41, GetEditBoxHeight(particlesKeyFrames[keyFrame].blueEditbox))
-					SetEditBoxPosition(particlesKeyFrames[keyFrame].blueEditbox, GetSpriteX(particlesKeyFrames[keyFrame].container) + (48 * 3), GetSpriteY(particlesKeyFrames[keyFrame].container) + GetSpriteHeight(particlesKeyFrames[keyFrame].container) - GetEditBoxHeight(particlesKeyFrames[keyFrame].blueEditbox))
-					SetEditBoxBorderSize(particlesKeyFrames[keyFrame].blueEditbox, 1)
-					SetEditBoxBorderColor(particlesKeyFrames[keyFrame].blueEditbox, 90, 88, 91, 255)
-					SetEditBoxInputType(particlesKeyFrames[keyFrame].blueEditbox, 1)
-					SetEditBoxBackgroundColor(particlesKeyFrames[keyFrame].blueEditbox, 61, 57, 60, 255)
-					SetEditBoxTextColor(particlesKeyFrames[keyFrame].blueEditbox, 255, 255, 255)
-					SetEditBoxDepth(particlesKeyFrames[keyFrame].blueEditbox, GetSpriteDepth(ui.panels[a].background) - 2)
-					FixEditBoxToScreen(particlesKeyFrames[keyFrame].blueEditbox, 1)
-					particlesKeyFrames[keyFrame].alphaLabel = CreateText("Alpha")
-					SetTextSize(particlesKeyFrames[keyFrame].alphaLabel, defaultTextSize#)
-					SetTextPosition(particlesKeyFrames[keyFrame].alphaLabel, GetSpriteX(particlesKeyFrames[keyFrame].container) + (48 * 4), GetSpriteY(particlesKeyFrames[keyFrame].container))
-					SetTextDepth(particlesKeyFrames[keyFrame].alphaLabel, GetSpriteDepth(ui.panels[a].background) - 2)
-					FixTextToScreen(particlesKeyFrames[keyFrame].alphaLabel, 1)
-					particlesKeyFrames[keyFrame].alphaEditbox = CreateEditBox()
-					SetEditBoxText(particlesKeyFrames[keyFrame].alphaEditbox, str(particlesKeyFrames[keyFrame].alphaValue#, 0))
-					SetEditBoxSize(particlesKeyFrames[keyFrame].alphaEditbox, 41, GetEditBoxHeight(particlesKeyFrames[keyFrame].alphaEditbox))
-					SetEditBoxPosition(particlesKeyFrames[keyFrame].alphaEditbox, GetSpriteX(particlesKeyFrames[keyFrame].container) + (48 * 4), GetSpriteY(particlesKeyFrames[keyFrame].container) + GetSpriteHeight(particlesKeyFrames[keyFrame].container) - GetEditBoxHeight(particlesKeyFrames[keyFrame].alphaEditbox))
-					SetEditBoxBorderSize(particlesKeyFrames[keyFrame].alphaEditbox, 1)
-					SetEditBoxBorderColor(particlesKeyFrames[keyFrame].alphaEditbox, 90, 88, 91, 255)
-					SetEditBoxInputType(particlesKeyFrames[keyFrame].alphaEditbox, 1)
-					SetEditBoxBackgroundColor(particlesKeyFrames[keyFrame].alphaEditbox, 61, 57, 60, 255)
-					SetEditBoxTextColor(particlesKeyFrames[keyFrame].alphaEditbox, 255, 255, 255)
-					SetEditBoxDepth(particlesKeyFrames[keyFrame].alphaEditbox, GetSpriteDepth(ui.panels[a].background) - 2)
-					FixEditBoxToScreen(particlesKeyFrames[keyFrame].alphaEditbox, 1)
-					particlesKeyFrames[keyFrame].deleteIcon = CreateSprite(GetIconImageID("delete"))
-					SetSpriteColor(particlesKeyFrames[keyFrame].deleteIcon, 147, 145, 147, 255)
-					SetSpriteSize(particlesKeyFrames[keyFrame].deleteIcon, 20, 20)
-					SetSpritePosition(particlesKeyFrames[keyFrame].deleteIcon, GetSpriteX(particlesKeyFrames[keyFrame].container) + GetSpriteWidth(particlesKeyFrames[keyFrame].container) - GetSpriteWidth(particlesKeyFrames[keyFrame].deleteIcon), GetEditBoxY(particlesKeyFrames[keyFrame].alphaEditbox) + (GetEditBoxHeight(particlesKeyFrames[keyFrame].alphaEditbox) / 2) - (GetSpriteHeight(particlesKeyFrames[keyFrame].deleteIcon) / 2))
-					FixSpriteToScreen(particlesKeyFrames[keyFrame].deleteIcon, 1)
+					if (particlesKeyFrames[keyFrame].group$ = "Scale")
+						particlesKeyFrames[keyFrame].scaleMin# = 0
+						particlesKeyFrames[keyFrame].scaleMax# = 255
+						particlesKeyFrames[keyFrame].timeMin# = 0
+						particlesKeyFrames[keyFrame].timeMax# = 999
+						particlesKeyFrames[keyFrame].container = CreateSprite(0)
+						SetSpriteSize(particlesKeyFrames[keyFrame].container, 260, 38)
+						if (keyFrame = 0)
+							SetSpritePosition(particlesKeyFrames[keyFrame].container, GetSpriteX(ui.panels[a].background) + 20, GetSpriteY(ui.panels[a].subHeaders[0].container) + GetSpriteHeight(ui.panels[a].subHeaders[0].container) + 10)
+						else
+							SetSpritePosition(particlesKeyFrames[keyFrame].container, GetSpriteX(ui.panels[a].background) + 20, GetSpriteY(particlesKeyFrames[keyFrame - 1].container) + GetSpriteHeight(particlesKeyFrames[keyFrame - 1].container) + 12)
+						endif
+						SetSpriteColor(particlesKeyFrames[keyFrame].container, 255, 0, 0, 0)
+						SetSpriteDepth(particlesKeyFrames[keyFrame].container, GetSpriteDepth(ui.panels[a].background))
+						FixSpriteToScreen(particlesKeyFrames[keyFrame].container, 1)
+						particlesKeyFrames[keyFrame].timeLabel = CreateText("Time")
+						SetTextSize(particlesKeyFrames[keyFrame].timeLabel, defaultTextSize#)
+						SetTextPosition(particlesKeyFrames[keyFrame].timeLabel, GetSpriteX(particlesKeyFrames[keyFrame].container) + (48 * 0), GetSpriteY(particlesKeyFrames[keyFrame].container))
+						SetTextDepth(particlesKeyFrames[keyFrame].timeLabel, GetSpriteDepth(ui.panels[a].background) - 2)
+						FixTextToScreen(particlesKeyFrames[keyFrame].timeLabel, 1)
+						particlesKeyFrames[keyFrame].timeEditbox = CreateEditBox()
+						SetEditBoxText(particlesKeyFrames[keyFrame].timeEditbox, str(particlesKeyFrames[keyFrame].timeValue#, 2))
+						SetEditBoxSize(particlesKeyFrames[keyFrame].timeEditbox, 41, GetEditBoxHeight(particlesKeyFrames[keyFrame].timeEditbox))
+						SetEditBoxPosition(particlesKeyFrames[keyFrame].timeEditbox, GetSpriteX(particlesKeyFrames[keyFrame].container) + (48 * 0), GetSpriteY(particlesKeyFrames[keyFrame].container) + GetSpriteHeight(particlesKeyFrames[keyFrame].container) - GetEditBoxHeight(particlesKeyFrames[keyFrame].timeEditbox))
+						SetEditBoxBorderSize(particlesKeyFrames[keyFrame].timeEditbox, 1)
+						SetEditBoxBorderColor(particlesKeyFrames[keyFrame].timeEditbox, 90, 88, 91, 255)
+						SetEditBoxInputType(particlesKeyFrames[keyFrame].timeEditbox, 1)
+						SetEditBoxBackgroundColor(particlesKeyFrames[keyFrame].timeEditbox, 61, 57, 60, 255)
+						SetEditBoxTextColor(particlesKeyFrames[keyFrame].timeEditbox, 255, 255, 255)
+						SetEditBoxDepth(particlesKeyFrames[keyFrame].timeEditbox, GetSpriteDepth(ui.panels[a].background) - 2)
+						FixEditBoxToScreen(particlesKeyFrames[keyFrame].timeEditbox, 1)
+						particlesKeyFrames[keyFrame].scaleLabel = CreateText("Scale")
+						SetTextSize(particlesKeyFrames[keyFrame].scaleLabel, defaultTextSize#)
+						SetTextPosition(particlesKeyFrames[keyFrame].scaleLabel, GetSpriteX(particlesKeyFrames[keyFrame].container) + (48 * 1), GetSpriteY(particlesKeyFrames[keyFrame].container))
+						SetTextDepth(particlesKeyFrames[keyFrame].scaleLabel, GetSpriteDepth(ui.panels[a].background) - 2)
+						FixTextToScreen(particlesKeyFrames[keyFrame].scaleLabel, 1)
+						particlesKeyFrames[keyFrame].scaleEditbox = CreateEditBox()
+						SetEditBoxText(particlesKeyFrames[keyFrame].scaleEditbox, str(particlesKeyFrames[keyFrame].scaleValue#, 2))
+						SetEditBoxSize(particlesKeyFrames[keyFrame].scaleEditbox, 41, GetEditBoxHeight(particlesKeyFrames[keyFrame].scaleEditbox))
+						SetEditBoxPosition(particlesKeyFrames[keyFrame].scaleEditbox, GetSpriteX(particlesKeyFrames[keyFrame].container) + (48 * 1), GetSpriteY(particlesKeyFrames[keyFrame].container) + GetSpriteHeight(particlesKeyFrames[keyFrame].container) - GetEditBoxHeight(particlesKeyFrames[keyFrame].scaleEditbox))
+						SetEditBoxBorderSize(particlesKeyFrames[keyFrame].scaleEditbox, 1)
+						SetEditBoxBorderColor(particlesKeyFrames[keyFrame].scaleEditbox, 90, 88, 91, 255)
+						SetEditBoxInputType(particlesKeyFrames[keyFrame].scaleEditbox, 1)
+						SetEditBoxBackgroundColor(particlesKeyFrames[keyFrame].scaleEditbox, 61, 57, 60, 255)
+						SetEditBoxTextColor(particlesKeyFrames[keyFrame].scaleEditbox, 255, 255, 255)
+						SetEditBoxDepth(particlesKeyFrames[keyFrame].scaleEditbox, GetSpriteDepth(ui.panels[a].background) - 2)
+						FixEditBoxToScreen(particlesKeyFrames[keyFrame].scaleEditbox, 1)
+						particlesKeyFrames[keyFrame].deleteIcon = CreateSprite(GetIconImageID("delete"))
+						SetSpriteColor(particlesKeyFrames[keyFrame].deleteIcon, 147, 145, 147, 255)
+						SetSpriteSize(particlesKeyFrames[keyFrame].deleteIcon, 20, 20)
+						SetSpritePosition(particlesKeyFrames[keyFrame].deleteIcon, GetSpriteX(particlesKeyFrames[keyFrame].container) + GetSpriteWidth(particlesKeyFrames[keyFrame].container) - GetSpriteWidth(particlesKeyFrames[keyFrame].deleteIcon), GetEditBoxY(particlesKeyFrames[keyFrame].scaleEditbox) + (GetEditBoxHeight(particlesKeyFrames[keyFrame].scaleEditbox) / 2) - (GetSpriteHeight(particlesKeyFrames[keyFrame].deleteIcon) / 2))
+						FixSpriteToScreen(particlesKeyFrames[keyFrame].deleteIcon, 1)
+					endif
 				next
 				
 				for b = 0 to ui.panels[a].buttons.length
@@ -1741,8 +2281,6 @@ function UpdateUIListener()
 					endif	
 					labelX# = 0
 					labelY# = 0
-					if (b = 0) then ui.panels[a].buttons[b].name$ = "AddColorKeyFrame"
-					if (b = 1) then ui.panels[a].buttons[b].name$ = "AddScaleKeyFrame"
 					SetSpriteSize(ui.panels[a].buttons[b].background, buttonWidth#, buttonHeight#)
 					SetSpritePosition(ui.panels[a].buttons[b].background, buttonX#, buttonY#)
 					FixSpriteToScreen(ui.panels[a].buttons[b].background, 1)
@@ -1868,27 +2406,72 @@ function UpdateUIListener()
 				remend
 			endif
 			if (selectedCategory = CATEGORY_SINE_WAVES)
+				imageLoader = 0
+				ui.imageLoaders[imageLoader].name$ = "Image"
+				SetSpritePosition(ui.imageLoaders[imageLoader].container, GetSpriteX(ui.panels[a].background) + 20, GetSpriteY(ui.panels[a].background) + 10 + 40)
+				SetSpriteSize(ui.imageLoaders[imageLoader].container, 260, 100)
+				SetSpriteColor(ui.imageLoaders[imageLoader].container, 255, 255, 0, 0)
+				SetSpriteDepth(ui.imageLoaders[imageLoader].container, GetSpriteDepth(ui.panels[a].background))
+				SetTextSize(ui.imageLoaders[imageLoader].label, defaultTextSize#)
+				SetTextString(ui.imageLoaders[imageLoader].label, "Image")
+				SetTextPosition(ui.imageLoaders[imageLoader].label, GetSpriteX(ui.imageLoaders[imageLoader].container), GetSpriteY(ui.imageLoaders[imageLoader].container))
+				SetTextDepth(ui.imageLoaders[imageLoader].label, GetSpriteDepth(ui.panels[a].background) - 2)
+				SetSpritePosition(ui.imageLoaders[imageLoader].imageBorder, GetSpriteX(ui.imageLoaders[imageLoader].container), GetSpriteY(ui.imageLoaders[imageLoader].container) + 20)
+				SetSpriteSize(ui.imageLoaders[imageLoader].imageBorder, 100, 80)
+				SetSpriteColor(ui.imageLoaders[imageLoader].imageBorder, 116, 116, 116, 255)
+				SetSpriteDepth(ui.imageLoaders[imageLoader].imageBorder, GetSpriteDepth(ui.panels[a].background) - 2)
+				SetSpritePositionByOffset(ui.imageLoaders[imageLoader].imageBackground, GetSpriteXByOffset(ui.imageLoaders[imageLoader].imageBorder), GetSpriteYByOffset(ui.imageLoaders[imageLoader].imageBorder))
+				SetSpriteSize(ui.imageLoaders[imageLoader].imageBackground, 98, 78)
+				SetSpriteColor(ui.imageLoaders[imageLoader].imageBackground, 28, 24, 27, 255)
+				SetSpriteDepth(ui.imageLoaders[imageLoader].imageBackground, GetSpriteDepth(ui.panels[a].background) - 3)
+				SetSpritePositionByOffset(ui.imageLoaders[imageLoader].image, GetSpriteXByOffset(ui.imageLoaders[imageLoader].imageBorder), GetSpriteYByOffset(ui.imageLoaders[imageLoader].imageBorder))
+				if (ui.imageLoaders[imageLoader].value > 0)
+					SetSpriteSize(ui.imageLoaders[imageLoader].image, 70, 70)
+				else
+					SetSpriteSize(ui.imageLoaders[imageLoader].image, 50, 50)
+				endif
+				SetSpriteImage(ui.imageLoaders[imageLoader].image, ui.imageLoaders[imageLoader].value)
+				SetSpriteDepth(ui.imageLoaders[imageLoader].image, GetSpriteDepth(ui.panels[a].background) - 4)
+				SetSpriteSize(ui.imageLoaders[imageLoader].importButton.background, 145, 20)
+				SetSpritePosition(ui.imageLoaders[imageLoader].importButton.background, GetSpriteX(ui.imageLoaders[imageLoader].imageBorder) + GetSpriteWidth(ui.imageLoaders[imageLoader].imageBorder) + 10, GetSpriteY(ui.imageLoaders[imageLoader].imageBorder) + 15)
+				SetSpriteColor(ui.imageLoaders[imageLoader].importButton.background, 93, 89, 92, 255)
+				SetSpriteDepth(ui.imageLoaders[imageLoader].importButton.background, GetSpriteDepth(ui.panels[a].background) - 2)
+				SetTextAlignment(ui.imageLoaders[imageLoader].importButton.label, 1)
+				SetTextSize(ui.imageLoaders[imageLoader].importButton.label, defaultTextSize#)
+				SetTextPosition(ui.imageLoaders[imageLoader].importButton.label, GetSpriteXByOffset(ui.imageLoaders[imageLoader].importButton.background), GetSpriteYByOffset(ui.imageLoaders[imageLoader].importButton.background) - (GetTextTotalHeight(ui.imageLoaders[imageLoader].importButton.label) / 2))
+				SetTextDepth(ui.imageLoaders[imageLoader].importButton.label, GetSpriteDepth(ui.panels[a].background) - 3)
+				SetSpriteSize(ui.imageLoaders[imageLoader].removeButton.background, 145, 20)
+				SetSpritePosition(ui.imageLoaders[imageLoader].removeButton.background, GetSpriteX(ui.imageLoaders[imageLoader].imageBorder) + GetSpriteWidth(ui.imageLoaders[imageLoader].imageBorder) + 10, GetSpriteY(ui.imageLoaders[imageLoader].imageBorder) + 45)
+				SetSpriteColor(ui.imageLoaders[imageLoader].removeButton.background, 93, 89, 92, 255)
+				SetSpriteDepth(ui.imageLoaders[imageLoader].removeButton.background, GetSpriteDepth(ui.panels[a].background) - 2)
+				SetTextAlignment(ui.imageLoaders[imageLoader].removeButton.label, 1)
+				SetTextSize(ui.imageLoaders[imageLoader].removeButton.label, defaultTextSize#)
+				SetTextPosition(ui.imageLoaders[imageLoader].removeButton.label, GetSpriteXByOffset(ui.imageLoaders[imageLoader].removeButton.background), GetSpriteYByOffset(ui.imageLoaders[imageLoader].removeButton.background) - (GetTextTotalHeight(ui.imageLoaders[imageLoader].removeButton.label) / 2))
+				SetTextDepth(ui.imageLoaders[imageLoader].removeButton.label, GetSpriteDepth(ui.panels[a].background) - 3)
+				
 				slider = 0
-				ui.sliders[slider].name$ = "AngularFrequency"
+				ui.sliders[slider].name$ = "SpriteHeight"
 				ui.sliders[slider].min# = 0
-				ui.sliders[slider].max# = 10
-				ui.sliders[slider].value# = 1
+				ui.sliders[slider].max# = 500
+				//ui.sliders[slider].value# = 100
 				ui.sliders[slider].activeTrackFromCentre = 0
 				ui.sliders[slider].rangeSlider = 0
-				SetSpritePosition(ui.sliders[slider].container, GetSpriteX(ui.panels[a].background) + 20, GetSpriteY(ui.panels[a].background) + 10 + 40)
+				//SetSpritePosition(ui.sliders[slider].container, GetSpriteX(ui.panels[a].background) + 20, GetSpriteY(ui.panels[a].background) + 10 + 40)
+				SetSpritePosition(ui.sliders[slider].container, GetSpriteX(ui.panels[a].background) + 20, GetSpriteY(ui.imageLoaders[0].container) + GetSpriteHeight(ui.imageLoaders[0].container) + 10)
 				SetSpriteSize(ui.sliders[slider].container, 260, 37)
 				SetSpriteColor(ui.sliders[slider].container, 255, 255, 0, 0)
 				SetSpriteDepth(ui.sliders[slider].container, GetSpriteDepth(ui.panels[a].background))
-				SetTextString(ui.sliders[slider].label, "Angular Frequency")
+				SetTextString(ui.sliders[slider].label, "Sprite Height")
 				SetTextSize(ui.sliders[slider].label, defaultTextSize#)
 				SetTextDepth(ui.sliders[slider].label, GetSpriteDepth(ui.panels[a].background) - 2)
 				SetTextPosition(ui.sliders[slider].label, GetSpriteX(ui.sliders[slider].container), GetSpriteY(ui.sliders[slider].container))
 				SetEditBoxText(ui.sliders[slider].editbox, str(ui.sliders[slider].value#, 0))
 				SetEditBoxPosition(ui.sliders[slider].editbox, GetSpriteX(ui.sliders[slider].container) + 260 - 50, GetSpriteY(ui.sliders[slider].container))
 				SetEditBoxSize(ui.sliders[slider].editbox, 45, GetEditBoxHeight(ui.sliders[slider].editbox))
-				SetEditBoxBorderSize(ui.sliders[slider].editbox, 0)
+				SetEditBoxBorderSize(ui.sliders[slider].editbox, 1)
+				SetEditBoxBorderColor(ui.sliders[slider].editbox, 90, 88, 91, 255)
 				SetEditBoxInputType(ui.sliders[slider].editbox, 1)
-				SetEditBoxBackgroundColor(ui.sliders[slider].editbox, 90, 88, 91, 255)
+				SetEditBoxBackgroundColor(ui.sliders[slider].editbox, 61, 57, 60, 255)
 				SetEditBoxTextColor(ui.sliders[slider].editbox, 255, 255, 255)
 				SetEditBoxDepth(ui.sliders[slider].editbox, GetSpriteDepth(ui.panels[a].background) - 2)
 				SetSpritePosition(ui.sliders[slider].inactiveTrack, GetSpriteX(ui.sliders[slider].container) + 7.5, GetSpriteY(ui.sliders[slider].container) + 27)
@@ -1916,17 +2499,18 @@ function UpdateUIListener()
 				SetSpriteDepth(ui.sliders[slider].activeTrack, GetSpriteDepth(ui.panels[a].background) - 3)
 				
 				slider = 1
-				ui.sliders[slider].name$ = "Amplitude"
+				ui.sliders[slider].name$ = "AngularFrequency"
 				ui.sliders[slider].min# = 0
-				ui.sliders[slider].max# = 500
-				ui.sliders[slider].value# = 100
+				ui.sliders[slider].max# = 10
+				//ui.sliders[slider].value# = 1
 				ui.sliders[slider].activeTrackFromCentre = 0
 				ui.sliders[slider].rangeSlider = 0
+				//SetSpritePosition(ui.sliders[slider].container, GetSpriteX(ui.panels[a].background) + 20, GetSpriteY(ui.panels[a].background) + 10 + 40)
 				SetSpritePosition(ui.sliders[slider].container, GetSpriteX(ui.panels[a].background) + 20, GetSpriteY(ui.sliders[slider - 1].container) + GetSpriteHeight(ui.sliders[slider - 1].container) + 10)
 				SetSpriteSize(ui.sliders[slider].container, 260, 37)
 				SetSpriteColor(ui.sliders[slider].container, 255, 255, 0, 0)
 				SetSpriteDepth(ui.sliders[slider].container, GetSpriteDepth(ui.panels[a].background))
-				SetTextString(ui.sliders[slider].label, "Amplitude")
+				SetTextString(ui.sliders[slider].label, "Angular Frequency")
 				SetTextSize(ui.sliders[slider].label, defaultTextSize#)
 				SetTextDepth(ui.sliders[slider].label, GetSpriteDepth(ui.panels[a].background) - 2)
 				SetTextPosition(ui.sliders[slider].label, GetSpriteX(ui.sliders[slider].container), GetSpriteY(ui.sliders[slider].container))
@@ -1935,7 +2519,7 @@ function UpdateUIListener()
 				SetEditBoxSize(ui.sliders[slider].editbox, 45, GetEditBoxHeight(ui.sliders[slider].editbox))
 				SetEditBoxBorderSize(ui.sliders[slider].editbox, 0)
 				SetEditBoxInputType(ui.sliders[slider].editbox, 1)
-				SetEditBoxBackgroundColor(ui.sliders[slider].editbox, 90, 88, 91, 255)
+				SetEditBoxBackgroundColor(ui.sliders[slider].editbox, 61, 57, 60, 255)
 				SetEditBoxTextColor(ui.sliders[slider].editbox, 255, 255, 255)
 				SetEditBoxDepth(ui.sliders[slider].editbox, GetSpriteDepth(ui.panels[a].background) - 2)
 				SetSpritePosition(ui.sliders[slider].inactiveTrack, GetSpriteX(ui.sliders[slider].container) + 7.5, GetSpriteY(ui.sliders[slider].container) + 27)
@@ -1963,10 +2547,57 @@ function UpdateUIListener()
 				SetSpriteDepth(ui.sliders[slider].activeTrack, GetSpriteDepth(ui.panels[a].background) - 3)
 				
 				slider = 2
+				ui.sliders[slider].name$ = "Amplitude"
+				ui.sliders[slider].min# = 0
+				ui.sliders[slider].max# = 500
+				//ui.sliders[slider].value# = 100
+				ui.sliders[slider].activeTrackFromCentre = 0
+				ui.sliders[slider].rangeSlider = 0
+				SetSpritePosition(ui.sliders[slider].container, GetSpriteX(ui.panels[a].background) + 20, GetSpriteY(ui.sliders[slider - 1].container) + GetSpriteHeight(ui.sliders[slider - 1].container) + 10)
+				SetSpriteSize(ui.sliders[slider].container, 260, 37)
+				SetSpriteColor(ui.sliders[slider].container, 255, 255, 0, 0)
+				SetSpriteDepth(ui.sliders[slider].container, GetSpriteDepth(ui.panels[a].background))
+				SetTextString(ui.sliders[slider].label, "Amplitude")
+				SetTextSize(ui.sliders[slider].label, defaultTextSize#)
+				SetTextDepth(ui.sliders[slider].label, GetSpriteDepth(ui.panels[a].background) - 2)
+				SetTextPosition(ui.sliders[slider].label, GetSpriteX(ui.sliders[slider].container), GetSpriteY(ui.sliders[slider].container))
+				SetEditBoxText(ui.sliders[slider].editbox, str(ui.sliders[slider].value#, 0))
+				SetEditBoxPosition(ui.sliders[slider].editbox, GetSpriteX(ui.sliders[slider].container) + 260 - 50, GetSpriteY(ui.sliders[slider].container))
+				SetEditBoxSize(ui.sliders[slider].editbox, 45, GetEditBoxHeight(ui.sliders[slider].editbox))
+				SetEditBoxBorderSize(ui.sliders[slider].editbox, 0)
+				SetEditBoxInputType(ui.sliders[slider].editbox, 1)
+				SetEditBoxBackgroundColor(ui.sliders[slider].editbox, 61, 57, 60, 255)
+				SetEditBoxTextColor(ui.sliders[slider].editbox, 255, 255, 255)
+				SetEditBoxDepth(ui.sliders[slider].editbox, GetSpriteDepth(ui.panels[a].background) - 2)
+				SetSpritePosition(ui.sliders[slider].inactiveTrack, GetSpriteX(ui.sliders[slider].container) + 7.5, GetSpriteY(ui.sliders[slider].container) + 27)
+				SetSpriteSize(ui.sliders[slider].inactiveTrack, 260 - 15, 4)
+				SetSpriteColor(ui.sliders[slider].inactiveTrack, 61, 57, 60, 255)
+				SetSpriteDepth(ui.sliders[slider].inactiveTrack, GetSpriteDepth(ui.panels[a].background) - 2)
+				SetSpriteSize(ui.sliders[slider].handle, 15, 15)
+				percentage# = ((ui.sliders[slider].value# - ui.sliders[slider].min#) / (ui.sliders[slider].max# - ui.sliders[slider].min#)) * 100.0
+				handleX# = ((GetSpriteWidth(ui.sliders[slider].inactiveTrack) - GetSpriteWidth(ui.sliders[slider].handle)) / 100.0) * percentage#
+				SetSpritePositionByOffset(ui.sliders[slider].handle, GetSpriteX(ui.sliders[slider].inactiveTrack) + (GetSpriteWidth(ui.sliders[slider].handle) / 2) + handleX#, GetSpriteYByOffset(ui.sliders[slider].inactiveTrack))
+				SetSpriteColor(ui.sliders[slider].handle, 147, 145, 147, 255)
+				SetSpriteDepth(ui.sliders[slider].handle, GetSpriteDepth(ui.panels[a].background) - 4)
+				if (ui.sliders[slider].activeTrackFromCentre = 0)
+					SetSpriteSize(ui.sliders[slider].activeTrack, GetSpriteXByOffset(ui.sliders[slider].handle) - GetSpriteX(ui.sliders[slider].inactiveTrack), 4)
+					SetSpritePosition(ui.sliders[slider].activeTrack, GetSpriteX(ui.sliders[slider].container) + 7.5, GetSpriteY(ui.sliders[slider].container) + 27)
+				else
+					SetSpriteSize(ui.sliders[slider].activeTrack, abs(GetSpriteXByOffset(ui.sliders[slider].handle) - GetSpriteXByOffset(ui.sliders[slider].inactiveTrack)), 4)
+					if (ui.sliders[slider].value# < 0)
+						SetSpritePosition(ui.sliders[slider].activeTrack, GetSpriteXByOffset(ui.sliders[slider].inactiveTrack) - GetSpriteWidth(ui.sliders[slider].activeTrack), GetSpriteY(ui.sliders[slider].container) + 27)
+					else
+						SetSpritePosition(ui.sliders[slider].activeTrack, GetSpriteXByOffset(ui.sliders[slider].inactiveTrack), GetSpriteY(ui.sliders[slider].container) + 27)
+					endif	
+				endif
+				SetSpriteColor(ui.sliders[slider].activeTrack, 98, 96, 98, 255)
+				SetSpriteDepth(ui.sliders[slider].activeTrack, GetSpriteDepth(ui.panels[a].background) - 3)
+				
+				slider = 3
 				ui.sliders[slider].name$ = "SpacingX"
 				ui.sliders[slider].min# = -25
 				ui.sliders[slider].max# = 25
-				ui.sliders[slider].value# = 1
+				//ui.sliders[slider].value# = 1
 				ui.sliders[slider].activeTrackFromCentre = 1
 				ui.sliders[slider].rangeSlider = 0
 				SetSpritePosition(ui.sliders[slider].container, GetSpriteX(ui.panels[a].background) + 20, GetSpriteY(ui.sliders[slider - 1].container) + GetSpriteHeight(ui.sliders[slider - 1].container) + 10)
@@ -1982,7 +2613,7 @@ function UpdateUIListener()
 				SetEditBoxSize(ui.sliders[slider].editbox, 45, GetEditBoxHeight(ui.sliders[slider].editbox))
 				SetEditBoxBorderSize(ui.sliders[slider].editbox, 0)
 				SetEditBoxInputType(ui.sliders[slider].editbox, 1)
-				SetEditBoxBackgroundColor(ui.sliders[slider].editbox, 90, 88, 91, 255)
+				SetEditBoxBackgroundColor(ui.sliders[slider].editbox, 61, 57, 60, 255)
 				SetEditBoxTextColor(ui.sliders[slider].editbox, 255, 255, 255)
 				SetEditBoxDepth(ui.sliders[slider].editbox, GetSpriteDepth(ui.panels[a].background) - 2)
 				SetSpritePosition(ui.sliders[slider].inactiveTrack, GetSpriteX(ui.sliders[slider].container) + 7.5, GetSpriteY(ui.sliders[slider].container) + 27)
@@ -2011,8 +2642,8 @@ function UpdateUIListener()
 
 				checkbox = 0
 				ui.checkboxes[checkbox].name$ = "RotateAlongWave"
-				ui.checkboxes[checkbox].value = 1
-				SetSpritePosition(ui.checkboxes[checkbox].container, GetSpriteX(ui.panels[a].background) + 20, GetSpriteY(ui.sliders[2].container) + GetSpriteHeight(ui.sliders[2].container) + 14)
+				//ui.checkboxes[checkbox].value = 1
+				SetSpritePosition(ui.checkboxes[checkbox].container, GetSpriteX(ui.panels[a].background) + 20, GetSpriteY(ui.sliders[2].container) + GetSpriteHeight(ui.sliders[3].container) + 14)
 				SetSpriteSize(ui.checkboxes[checkbox].container, 260, 20)
 				SetSpriteColor(ui.checkboxes[checkbox].container, 255, 255, 0, 0)
 				SetSpriteDepth(ui.checkboxes[checkbox].container, GetSpriteDepth(ui.panels[a].background) - 2)
@@ -2072,6 +2703,10 @@ function UpdateUIListener()
 			SetSpritePosition(ui.panels[a].background, panelX#, panelY#)
 			SetSpriteSize(ui.panels[a].background, panelWidth#, panelHeight#)
 			FixSpriteToScreen(ui.panels[a].background, 1)
+			SetTextSize(ui.panels[a].titleLabel, defaultTextSize# * 2.5)
+			SetTextAlignment(ui.panels[a].titleLabel, 1)
+			SetTextPosition(ui.panels[a].titleLabel, GetSpriteXByOffset(ui.panels[a].background), GetSpriteYByOffset(ui.panels[a].background) - (GetTextTotalHeight(ui.panels[a].titleLabel) / 2))
+			FixTextToScreen(ui.panels[a].titleLabel, 1)
 			for b = 0 to ui.panels[a].buttons.length
 				buttonHeight# = defaultButtonHeight#
 				buttonWidth# = defaultButtonWidth#
