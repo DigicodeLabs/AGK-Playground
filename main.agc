@@ -51,10 +51,6 @@ spaceship = CreateSprite(imgSpaceship)
 SetSpriteSize(spaceship, 50, 50)
 SetSpritePosition(spaceship, -99999, -99999)
 SetSpriteDepth(spaceship, 100)
-coin = CreateSprite(LoadImage("coin.png"))
-SetSpriteSize(coin, 75, 75)
-SetSpritePosition(coin, -99999, -99999)
-SetSpriteDepth(coin, 100)
 particles = CreateParticles(-99999, -99999)
 recreateParticles = 1
 
@@ -1664,6 +1660,7 @@ do
 	else
 		SetSpritePositionByOffset(spaceship, -99999, -99999)
 	endif
+	remstart
 	if (selectedCategory = CATEGORY_2D_TWEENS)
 		if (redrawUI = 1)
 			SetSpritePositionByOffset(coin, categoriesPanelWidth# + ((GetWindowWidth() - categoriesPanelWidth# - propertiesPanelWidth#)  / 2), topPanelHeight# + tabsPanelHeight# + ((GetWindowHeight() - topPanelHeight# - tabsPanelHeight#) / 2))
@@ -1687,6 +1684,7 @@ do
 	else
 		SetSpritePositionByOffset(coin, -99999, -99999)
 	endif
+	remend
 
 	ScrollBarsListener()
 	
