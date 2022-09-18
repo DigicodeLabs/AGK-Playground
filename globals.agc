@@ -24,6 +24,7 @@ global localVariables as typeJSONVariables[]
 if (GetFileExists("localVariables.json")) then localVariables.load("localVariables.json")
 global particles as integer
 global particlesKeyFrames as typeParticlesKeyFrame[]
+global propertiesChanged as integer : propertiesChanged = 0
 global recreateParticles as integer
 global redrawCode as integer : redrawCode = 1
 global redrawPlayground as integer : redrawPlayground = 1

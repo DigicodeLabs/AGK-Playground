@@ -56,12 +56,12 @@ FILE_4=types.agc;-1
 FILE_5=ui.agc;-1
 
 [files]
-FILE_NAME_0=0;functions.agc;242;0
-FILE_NAME_1=0;globals.agc;32;1
-FILE_NAME_2=0;icons.agc;14;2
-FILE_NAME_3=0;main.agc;123;3
-FILE_NAME_4=0;types.agc;28;4
-FILE_NAME_5=1;ui.agc;8;5
+FILE_NAME_0=0;functions.agc;211;0
+FILE_NAME_1=0;globals.agc;17;1
+FILE_NAME_2=0;icons.agc;0;2
+FILE_NAME_3=0;main.agc;131;3
+FILE_NAME_4=0;types.agc;14;4
+FILE_NAME_5=0;ui.agc;233;5
 
 [watchvariables]
 

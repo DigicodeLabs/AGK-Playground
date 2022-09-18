@@ -20,6 +20,11 @@ type typeParticlesKeyFrame
 	blueValue# as float
 	container as integer
 	deleteIcon as integer
+	endTimeEditbox as integer
+	endTimeLabel as integer
+	endTimeMax# as float
+	endTimeMin# as float
+	endTimeValue# as float
 	greenEditbox as integer
 	greenLabel as integer
 	greenMax# as float
@@ -41,5 +46,15 @@ type typeParticlesKeyFrame
 	timeMax# as float
 	timeMin# as float
 	timeValue# as float
+	xEditbox as integer
+	xLabel as integer
+	xMax# as float
+	xMin# as float
+	xValue# as float
+	yEditbox as integer
+	yLabel as integer
+	yMax# as float
+	yMin# as float
+	yValue# as float
 endtype
 

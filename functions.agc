@@ -67,7 +67,7 @@ function CreateOrUpdateCodeLine(index as integer, text$ as string)
 			SetTextColor(codeLines[index], 61, 157, 220, 255)
 		endif
 	next
-	commands = ["AddParticlesColorKeyFrame(", "AddParticlesScaleKeyFrame(", "atan2(", "ClearParticlesColors(", "ClearParticlesScales(", "cos(", "CreateParticles(", "CreateSprite(", "GetSpriteAngle(", "GetSpriteXByOffset(", "GetSpriteYByOffset(", "LoadImage(", "SetParticlesAngle(", "SetParticlesDirection(", "SetParticlesFrequency(", "SetParticlesImage(", "SetParticlesLife(", "SetParticlesPosition(", "SetParticlesSize(", "SetParticlesStartZone(", "SetParticlesVelocityRange(", "SetSpritePositionByOffset(", "SetSpriteAngle(", "SetSpriteSize(", "sin(", "Sync(", "val("] 
+	commands = ["AddParticlesColorKeyFrame(", "AddParticlesForce(", "AddParticlesScaleKeyFrame(", "atan2(", "ClearParticlesColors(", "ClearParticlesForces(", "ClearParticlesScales(", "cos(", "CreateParticles(", "CreateSprite(", "GetSpriteAngle(", "GetSpriteXByOffset(", "GetSpriteYByOffset(", "LoadImage(", "random(", "SetParticlesAngle(", "SetParticlesDirection(", "SetParticlesFrequency(", "SetParticlesImage(", "SetParticlesLife(", "SetParticlesPosition(", "SetParticlesSize(", "SetParticlesStartZone(", "SetParticlesVelocityRange(", "SetParticlesRotationRange(", "SetSpritePositionByOffset(", "SetSpriteAngle(", "SetSpriteSize(", "sin(", "Sync(", "val("] 
 	for command = 0 to commands.length
 		offset = 0
 		for count = 1 to FindStringCount(GetTextString(codeLines[index]), commands[command])
@@ -224,18 +224,22 @@ function ResetProperties()
 	endif
 	if (selectedCategory = CATEGORY_2D_PARTICLES)
 		ui.imageLoaders[0].value = imgParticle
-		ui.sliders[0].value# = 50		// Particle Size
-		ui.sliders[1].value# = 20		// Angle Range
-		ui.sliders[2].value# = 0		// Direction X
-		ui.sliders[3].value# = -15		// Direction Y
-		ui.sliders[4].value# = 100		// Frequency
-		ui.sliders[5].value# = 6		// Particle Life
-		ui.sliders[6].minValue# = 2	// Velocity Range
-		ui.sliders[6].maxValue# = 4	// Velocity Range
-		ui.sliders[7].minValue# = -30	// Start Zone X
-		ui.sliders[7].maxValue# = 30	// Start Zone X
-		ui.sliders[8].minValue# = -20	// Start Zone Y
-		ui.sliders[8].maxValue# = 20	// Start Zone Y
+		ui.sliders[0].value# = categoriesPanelWidth# + ((GetWindowWidth() - categoriesPanelWidth# - propertiesPanelWidth#) / 2)		// Emitter X
+		ui.sliders[1].value# = topPanelHeight# + tabsPanelHeight# + ((GetWindowHeight() - topPanelHeight# - tabsPanelHeight#) / 2)		// Emitter Y
+		ui.sliders[2].value# = 50		// Particle Size
+		ui.sliders[3].value# = 20		// Angle Range
+		ui.sliders[4].value# = 0		// Direction X
+		ui.sliders[5].value# = -15		// Direction Y
+		ui.sliders[6].value# = 100		// Frequency
+		ui.sliders[7].value# = 6		// Particle Life
+		ui.sliders[8].minValue# = 2	// Velocity Range
+		ui.sliders[8].maxValue# = 4	// Velocity Range
+		ui.sliders[9].minValue# = 0	// Rotation Range
+		ui.sliders[9].maxValue# = 0	// Rotation Range
+		ui.sliders[10].minValue# = -30	// Start Zone X
+		ui.sliders[10].maxValue# = 30	// Start Zone X
+		ui.sliders[11].minValue# = -20	// Start Zone Y
+		ui.sliders[11].maxValue# = 20	// Start Zone Y
 		ui.checkboxes[0].value = 0	// Debug: Show Starting Zone
 	endif
 	if (selectedCategory = CATEGORY_SINE_WAVES)

@@ -1,5 +1,5 @@
 
-// Project: AGK Playground 
+// Project: AGK Playground 2 
 // Created: 22-08-23
 
 SetClearColor(30, 30, 30)
@@ -8,21 +8,11 @@ SetOrientationAllowed(1, 1, 1, 1)
 SetScissor(0, 0, 0, 0)
 SetSyncRate(60, 0)
 SetViewZoomMode(1)
+SetVirtualResolution(1024, 768)
 SetWindowAllowResize(1)
 SetWindowSize(1024, 768, 0)
-SetWindowTitle("AGK Playground")
+SetWindowTitle("AGK Playground 1")
 UseNewDefaultFonts(1)
-
-// PLAN:
-// 3 days creating app icon and cover image for itch.io
-// 1 day preparing itch.io page
-// 4 out of 11 days total
-
-// THANKS:
-// BlinkOk & Leyvin for Sin/Cos help
-//
-// CREDITS:
-// Artwork from KennyAssets (kenny.nl)
 
 #insert "types.agc"
 #insert "globals.agc"
@@ -122,7 +112,7 @@ SetTextSize(fps, defaultTextSize# * 2)
 SetTextColor(fps, 255, 255, 0, 200)
 FixTextToScreen(fps, 1)
 
-do
+do	
 	if (tabSelected = 0)
 		SetTextString(fps, "FPS: " + str(ScreenFPS(), 2))
 		SetTextPosition(fps, GetSpriteX(ui.panels[playgroundPanelIndex].background) + 10, GetSpriteY(ui.panels[playgroundPanelIndex].background) + 10)
@@ -135,8 +125,55 @@ do
 	endif
 	
 	if (selectedCategory = CATEGORY_2D_PARTICLES)
-		contentHeight# = 0
-		contentY# = GetSpriteY(ui.panels[propertiesPanelIndex].invisibleDragZone) + 10 + 40
+		contentHeight# = GetSpriteHeight(ui.panels[propertiesPanelIndex].titleBackground) + 10
+		contentY# = GetSpriteY(ui.panels[propertiesPanelIndex].invisibleDragZone) + 10 + GetSpriteHeight(ui.panels[propertiesPanelIndex].titleBackground)
+		
+		for slider = 0 to 1
+			if (GetSpriteExists(ui.panels[propertiesPanelIndex].invisibleDragZone) and GetSpriteExists(ui.sliders[slider].container))
+				SetSpritePosition(ui.sliders[slider].container, GetSpriteX(ui.panels[propertiesPanelIndex].invisibleDragZone) + 20, contentY#)
+				SetTextPosition(ui.sliders[slider].label, GetSpriteX(ui.sliders[slider].container), GetSpriteY(ui.sliders[slider].container))
+				if (ui.sliders[slider].rangeSlider = 0)
+					SetEditBoxPosition(ui.sliders[slider].editbox, GetSpriteX(ui.sliders[slider].container) + 260 - 50, GetSpriteY(ui.sliders[slider].container))
+				endif
+				if (ui.sliders[slider].rangeSlider = 1)
+					SetEditBoxPosition(ui.sliders[slider].minEditbox, GetSpriteX(ui.sliders[slider].container) + 260 - 115, GetSpriteY(ui.sliders[slider].container))
+					SetTextPosition(ui.sliders[slider].toLabel, GetSpriteX(ui.sliders[slider].container) + 260 - 60, GetSpriteY(ui.sliders[slider].container))	
+					SetEditBoxPosition(ui.sliders[slider].maxEditbox, GetSpriteX(ui.sliders[slider].container) + 260 - 50, GetSpriteY(ui.sliders[slider].container))
+				endif
+				SetSpritePosition(ui.sliders[slider].inactiveTrack, GetSpriteX(ui.sliders[slider].container) + 7.5, GetSpriteY(ui.sliders[slider].container) + 27)
+				if (ui.sliders[slider].rangeSlider = 0)
+					percentage# = ((ui.sliders[slider].value# - ui.sliders[slider].min#) / (ui.sliders[slider].max# - ui.sliders[slider].min#)) * 100.0
+					handleX# = ((GetSpriteWidth(ui.sliders[slider].inactiveTrack) - GetSpriteWidth(ui.sliders[slider].handle)) / 100.0) * percentage#
+					SetSpritePositionByOffset(ui.sliders[slider].handle, GetSpriteX(ui.sliders[slider].inactiveTrack) + (GetSpriteWidth(ui.sliders[slider].handle) / 2) + handleX#, GetSpriteYByOffset(ui.sliders[slider].inactiveTrack))
+				endif
+				if (ui.sliders[slider].rangeSlider = 1)
+					//percentage# = ((ui.sliders[slider].minValue# - ui.sliders[slider].min#) / (ui.sliders[slider].max# - ui.sliders[slider].min#)) * 100.0
+					percentage# = ((ui.sliders[slider].minValue# - ui.sliders[slider].min#) / (ui.sliders[slider].max# - ui.sliders[slider].min#)) * 100.0
+					handleX# = ((GetSpriteWidth(ui.sliders[slider].inactiveTrack) - GetSpriteWidth(ui.sliders[slider].minHandle)) / 100.0) * percentage#
+					SetSpritePositionByOffset(ui.sliders[slider].minHandle, GetSpriteX(ui.sliders[slider].inactiveTrack) + (GetSpriteWidth(ui.sliders[slider].minHandle) / 2) + handleX#, GetSpriteYByOffset(ui.sliders[slider].inactiveTrack))
+					percentage# = ((ui.sliders[slider].maxValue# - ui.sliders[slider].min#) / (ui.sliders[slider].max# - ui.sliders[slider].min#)) * 100.0
+					handleX# = ((GetSpriteWidth(ui.sliders[slider].inactiveTrack) - GetSpriteWidth(ui.sliders[slider].maxHandle)) / 100.0) * percentage#
+					SetSpritePositionByOffset(ui.sliders[slider].maxHandle, GetSpriteX(ui.sliders[slider].inactiveTrack) + (GetSpriteWidth(ui.sliders[slider].maxHandle) / 2) + handleX#, GetSpriteYByOffset(ui.sliders[slider].inactiveTrack))
+				endif
+				
+				if (ui.sliders[slider].rangeSlider = 0)
+					if (ui.sliders[slider].activeTrackFromCentre = 0)
+						SetSpritePosition(ui.sliders[slider].activeTrack, GetSpriteX(ui.sliders[slider].container) + 7.5, GetSpriteY(ui.sliders[slider].container) + 27)
+					else
+						if (ui.sliders[slider].value# < 0)
+							SetSpritePosition(ui.sliders[slider].activeTrack, GetSpriteXByOffset(ui.sliders[slider].inactiveTrack) - GetSpriteWidth(ui.sliders[slider].activeTrack), GetSpriteY(ui.sliders[slider].container) + 27)
+						else
+							SetSpritePosition(ui.sliders[slider].activeTrack, GetSpriteXByOffset(ui.sliders[slider].inactiveTrack), GetSpriteY(ui.sliders[slider].container) + 27)
+						endif	
+					endif
+				endif
+				if (ui.sliders[slider].rangeSlider = 1)
+					SetSpritePosition(ui.sliders[slider].activeTrack, GetSpriteXByOffset(ui.sliders[slider].minHandle), GetSpriteY(ui.sliders[slider].container) + 27)
+				endif
+			endif
+			contentY# = contentY# + GetSpriteHeight(ui.sliders[slider].container) + 10
+			contentHeight# = contentHeight# + GetSpriteHeight(ui.sliders[slider].container) + 10
+		next
 		
 		SetSpritePosition(ui.imageLoaders[0].container, GetSpriteX(ui.panels[propertiesPanelIndex].background) + 20, contentY#)
 		SetTextPosition(ui.imageLoaders[0].label, GetSpriteX(ui.imageLoaders[0].container), GetSpriteY(ui.imageLoaders[0].container))
@@ -148,8 +185,9 @@ do
 		SetSpritePosition(ui.imageLoaders[0].removeButton.background, GetSpriteX(ui.imageLoaders[0].imageBorder) + GetSpriteWidth(ui.imageLoaders[0].imageBorder) + 10, GetSpriteY(ui.imageLoaders[0].imageBorder) + 45)
 		SetTextPosition(ui.imageLoaders[0].removeButton.label, GetSpriteXByOffset(ui.imageLoaders[0].removeButton.background), GetSpriteYByOffset(ui.imageLoaders[0].removeButton.background) - (GetTextTotalHeight(ui.imageLoaders[0].removeButton.label) / 2))
 		contentY# = contentY# + GetSpriteHeight(ui.imageLoaders[0].container) + 10
+		contentHeight# = contentHeight# + GetSpriteHeight(ui.imageLoaders[0].container) + 10
 				
-		for slider = 0 to 8
+		for slider = 2 to 11
 			if (GetSpriteExists(ui.panels[propertiesPanelIndex].invisibleDragZone) and GetSpriteExists(ui.sliders[slider].container))
 				SetSpritePosition(ui.sliders[slider].container, GetSpriteX(ui.panels[propertiesPanelIndex].invisibleDragZone) + 20, contentY#)
 				SetTextPosition(ui.sliders[slider].label, GetSpriteX(ui.sliders[slider].container), GetSpriteY(ui.sliders[slider].container))
@@ -180,7 +218,6 @@ do
 					if (ui.sliders[slider].activeTrackFromCentre = 0)
 						SetSpritePosition(ui.sliders[slider].activeTrack, GetSpriteX(ui.sliders[slider].container) + 7.5, GetSpriteY(ui.sliders[slider].container) + 27)
 					else
-						SetSpriteSize(ui.sliders[slider].activeTrack, abs(GetSpriteXByOffset(ui.sliders[slider].handle) - GetSpriteXByOffset(ui.sliders[slider].inactiveTrack)), 4)
 						if (ui.sliders[slider].value# < 0)
 							SetSpritePosition(ui.sliders[slider].activeTrack, GetSpriteXByOffset(ui.sliders[slider].inactiveTrack) - GetSpriteWidth(ui.sliders[slider].activeTrack), GetSpriteY(ui.sliders[slider].container) + 27)
 						else
@@ -243,6 +280,20 @@ do
 					contentY# = contentY# + GetSpriteHeight(particlesKeyFrames[keyFrame].container) + 12
 					contentHeight# = contentHeight# + GetSpriteHeight(particlesKeyFrames[keyFrame].container) + 12
 				endif
+				if (particlesKeyFrames[keyFrame].group$ = "Force")
+					SetSpritePosition(particlesKeyFrames[keyFrame].container, GetSpriteX(ui.panels[propertiesPanelIndex].invisibleDragZone) + 20, contentY#)
+					SetTextPosition(particlesKeyFrames[keyFrame].timeLabel, GetSpriteX(particlesKeyFrames[keyFrame].container) + (48 * 0), GetSpriteY(particlesKeyFrames[keyFrame].container))
+					SetEditBoxPosition(particlesKeyFrames[keyFrame].timeEditbox, GetSpriteX(particlesKeyFrames[keyFrame].container) + (48 * 0), GetSpriteY(particlesKeyFrames[keyFrame].container) + GetSpriteHeight(particlesKeyFrames[keyFrame].container) - GetEditBoxHeight(particlesKeyFrames[keyFrame].timeEditbox))
+					SetTextPosition(particlesKeyFrames[keyFrame].endTimeLabel, GetSpriteX(particlesKeyFrames[keyFrame].container) + (48 * 1), GetSpriteY(particlesKeyFrames[keyFrame].container))
+					SetEditBoxPosition(particlesKeyFrames[keyFrame].endTimeEditbox, GetSpriteX(particlesKeyFrames[keyFrame].container) + (48 * 1), GetSpriteY(particlesKeyFrames[keyFrame].container) + GetSpriteHeight(particlesKeyFrames[keyFrame].container) - GetEditBoxHeight(particlesKeyFrames[keyFrame].endTimeEditbox))
+					SetTextPosition(particlesKeyFrames[keyFrame].xLabel, GetSpriteX(particlesKeyFrames[keyFrame].container) + (48 * 2), GetSpriteY(particlesKeyFrames[keyFrame].container))
+					SetEditBoxPosition(particlesKeyFrames[keyFrame].xEditbox, GetSpriteX(particlesKeyFrames[keyFrame].container) + (48 * 2), GetSpriteY(particlesKeyFrames[keyFrame].container) + GetSpriteHeight(particlesKeyFrames[keyFrame].container) - GetEditBoxHeight(particlesKeyFrames[keyFrame].xEditbox))
+					SetTextPosition(particlesKeyFrames[keyFrame].yLabel, GetSpriteX(particlesKeyFrames[keyFrame].container) + (48 * 3), GetSpriteY(particlesKeyFrames[keyFrame].container))
+					SetEditBoxPosition(particlesKeyFrames[keyFrame].yEditbox, GetSpriteX(particlesKeyFrames[keyFrame].container) + (48 * 3), GetSpriteY(particlesKeyFrames[keyFrame].container) + GetSpriteHeight(particlesKeyFrames[keyFrame].container) - GetEditBoxHeight(particlesKeyFrames[keyFrame].yEditbox))
+					SetSpritePosition(particlesKeyFrames[keyFrame].deleteIcon, GetSpriteX(particlesKeyFrames[keyFrame].container) + GetSpriteWidth(particlesKeyFrames[keyFrame].container) - GetSpriteWidth(particlesKeyFrames[keyFrame].deleteIcon), GetEditBoxY(particlesKeyFrames[keyFrame].yEditbox) + (GetEditBoxHeight(particlesKeyFrames[keyFrame].yEditbox) / 2) - (GetSpriteHeight(particlesKeyFrames[keyFrame].deleteIcon) / 2))
+					contentY# = contentY# + GetSpriteHeight(particlesKeyFrames[keyFrame].container) + 12
+					contentHeight# = contentHeight# + GetSpriteHeight(particlesKeyFrames[keyFrame].container) + 12
+				endif
 				if (particlesKeyFrames[keyFrame].group$ = "Scale")
 					SetSpritePosition(particlesKeyFrames[keyFrame].container, GetSpriteX(ui.panels[propertiesPanelIndex].invisibleDragZone) + 20, contentY#)
 					SetTextPosition(particlesKeyFrames[keyFrame].timeLabel, GetSpriteX(particlesKeyFrames[keyFrame].container) + (48 * 0), GetSpriteY(particlesKeyFrames[keyFrame].container))
@@ -258,7 +309,7 @@ do
 		for b = 0 to ui.panels[propertiesPanelIndex].buttons.length
 			if (GetSpriteExists(ui.panels[propertiesPanelIndex].buttons[b].background))
 				buttonHeight# = 20
-				buttonWidth# = 120
+				buttonWidth# = 75
 				buttonX# = GetSpriteX(ui.panels[propertiesPanelIndex].invisibleDragZone) + 20 + (buttonWidth# * b) + (b * 15)
 				buttonY# = contentY# + 5
 				SetSpritePosition(ui.panels[propertiesPanelIndex].buttons[b].background, buttonX#, buttonY#)
@@ -268,11 +319,11 @@ do
 		contentY# = contentY# + GetSpriteHeight(ui.panels[propertiesPanelIndex].buttons[0].background)
 		contentHeight# = contentHeight# + GetSpriteHeight(ui.panels[propertiesPanelIndex].buttons[0].background)
 		ui.panels[propertiesPanelIndex].contentHeight# = contentHeight#
-		if (contentHeight# > GetSpriteHeight(ui.panels[propertiesPanelIndex].background)) then ui.panels[propertiesPanelIndex].contentHeight# = ui.panels[propertiesPanelIndex].contentHeight# + 200
+		if (contentHeight# > GetSpriteHeight(ui.panels[propertiesPanelIndex].background)) then ui.panels[propertiesPanelIndex].contentHeight# = ui.panels[propertiesPanelIndex].contentHeight# + 200	
 	endif
 	if (selectedCategory = CATEGORY_COS_SIN_ORBIT)
-		contentHeight# = 0
-		contentY# = GetSpriteY(ui.panels[propertiesPanelIndex].invisibleDragZone) + 10 + 40
+		contentHeight# = GetSpriteHeight(ui.panels[propertiesPanelIndex].titleBackground) + 10
+		contentY# = GetSpriteY(ui.panels[propertiesPanelIndex].invisibleDragZone) + 10 + GetSpriteHeight(ui.panels[propertiesPanelIndex].titleBackground)
 		
 		imageLoader = 0
 		SetSpritePosition(ui.imageLoaders[imageLoader].container, GetSpriteX(ui.panels[propertiesPanelIndex].invisibleDragZone) + 20, GetSpriteY(ui.panels[propertiesPanelIndex].invisibleDragZone) + 10 + 40)
@@ -348,8 +399,8 @@ do
 		if (contentHeight# > GetSpriteHeight(ui.panels[propertiesPanelIndex].background)) then ui.panels[propertiesPanelIndex].contentHeight# = ui.panels[propertiesPanelIndex].contentHeight# + 200
 	endif
 	if (selectedCategory = CATEGORY_SINE_WAVES)
-		contentHeight# = 0
-		contentY# = GetSpriteY(ui.panels[propertiesPanelIndex].invisibleDragZone) + 10 + 40
+		contentHeight# = GetSpriteHeight(ui.panels[propertiesPanelIndex].titleBackground) + 10
+		contentY# = GetSpriteY(ui.panels[propertiesPanelIndex].invisibleDragZone) + 10 + GetSpriteHeight(ui.panels[propertiesPanelIndex].titleBackground)
 		
 		imageLoader = 0
 		SetSpritePosition(ui.imageLoaders[imageLoader].container, GetSpriteX(ui.panels[propertiesPanelIndex].invisibleDragZone) + 20, GetSpriteY(ui.panels[propertiesPanelIndex].invisibleDragZone) + 10 + 40)
@@ -486,7 +537,7 @@ do
 			if (spritePressed = ui.panels[propertiesPanelIndex].invisibleDragZone)
 				if (spriteDY# > GetSpriteY(ui.panels[propertiesPanelIndex].titleBackground)) then spriteDY# = GetSpriteY(ui.panels[propertiesPanelIndex].titleBackground)
 				if (spriteDY# < -(GetSpriteHeight(spritePressed) - GetWindowHeight())) then spriteDY# = -(GetSpriteHeight(spritePressed) - GetWindowHeight())
-				if (ui.panels[propertiesPanelIndex].contentHeight# > GetSpriteHeight(ui.panels[propertiesPanelIndex].background))
+				if (GetSpriteHeight(spritePressed) > GetSpriteHeight(ui.panels[propertiesPanelIndex].background) or GetSpriteY(spritePressed) <> GetSpriteY(ui.panels[propertiesPanelIndex].titleBackground))
 					SetSpriteY(spritePressed, spriteDY#)
 				endif
 				attachedTo = ui.panels[propertiesPanelIndex].invisibleDragZone
@@ -500,6 +551,7 @@ do
 				dY# = GetPointerY() - dragSpriteStartY#
 					
 				SetSpriteY(spritePressed, dY#)
+				
 				if (GetSpriteY(spritePressed) < GetSpriteY(ui.panels[propertiesPanelIndex].titleBackground)) then SetSpriteY(spritePressed, GetSpriteY(ui.panels[propertiesPanelIndex].titleBackground))
 				if (GetSpriteY(spritePressed) + GetSpriteHeight(spritePressed) > GetWindowHeight()) then SetSpriteY(spritePressed, GetWindowHeight() - GetSpriteHeight(spritePressed))
 				
@@ -512,7 +564,7 @@ do
 			else
 				SetSpriteColor(ui.panels[propertiesPanelIndex].verticalScrollBar, 61, 61, 61, 255)
 			endif
-			for i = 0 to 9
+			for i = 0 to 11
 				if (ui.sliders[i].rangeSlider = 0)
 					if (spritePressed = ui.sliders[i].handle)
 						dX# = GetPointerX() - dragSpriteStartX#
@@ -531,8 +583,14 @@ do
 							endif	
 						endif
 						percentage# = (100.0 / (GetSpriteWidth(ui.sliders[i].inactiveTrack) )) * (GetSpriteXByOffset(ui.sliders[i].handle) - GetSpriteX(ui.sliders[i].inactiveTrack))
-						ui.sliders[i].value# = (((abs(ui.sliders[i].min#) + ui.sliders[i].max#) / 100.0) * percentage#) - abs(ui.sliders[i].min#) // - GetSpriteWidth(ui.sliders[i].handle)
+						
+						if (ui.sliders[i].min# <= 0)
+							ui.sliders[i].value# = (((abs(ui.sliders[i].min#) + ui.sliders[i].max#) / 100.0) * percentage#) - abs(ui.sliders[i].min#) // - GetSpriteWidth(ui.sliders[i].handle)
+						else
+							ui.sliders[i].value# = (((ui.sliders[i].max# - ui.sliders[i].min#) / 100.0) * percentage#) + ui.sliders[i].min# // - GetSpriteWidth(ui.sliders[i].handle)
+						endif
 						SetEditBoxText(ui.sliders[i].editbox, str(ui.sliders[i].value#, 0))
+						propertiesChanged = 1
 					endif
 				endif
 				if (ui.sliders[i].rangeSlider = 1)
@@ -546,6 +604,7 @@ do
 						percentage# = (100.0 / (GetSpriteWidth(ui.sliders[i].inactiveTrack) )) * (GetSpriteXByOffset(ui.sliders[i].minHandle) - GetSpriteX(ui.sliders[i].inactiveTrack))
 						ui.sliders[i].minValue# = (((abs(ui.sliders[i].min#) + ui.sliders[i].max#) / 100.0) * percentage#) - abs(ui.sliders[i].min#) // - GetSpriteWidth(ui.sliders[i].handle)
 						SetEditBoxText(ui.sliders[i].minEditbox, str(ui.sliders[i].minValue#, 0))
+						propertiesChanged = 1
 					endif
 					if (spritePressed = ui.sliders[i].maxHandle)
 						dX# = GetPointerX() - dragSpriteStartX#
@@ -557,6 +616,7 @@ do
 						percentage# = (100.0 / (GetSpriteWidth(ui.sliders[i].inactiveTrack) )) * (GetSpriteXByOffset(ui.sliders[i].maxHandle) - GetSpriteX(ui.sliders[i].inactiveTrack))
 						ui.sliders[i].maxValue# = (((abs(ui.sliders[i].min#) + ui.sliders[i].max#) / 100.0) * percentage#) - abs(ui.sliders[i].min#) // - GetSpriteWidth(ui.sliders[i].handle)
 						SetEditBoxText(ui.sliders[i].maxEditbox, str(ui.sliders[i].maxValue#, 0))
+						propertiesChanged = 1
 					endif
 					SetSpriteSize(ui.sliders[i].activeTrack, abs(GetSpriteXByOffset(ui.sliders[i].maxHandle) - GetSpriteXByOffset(ui.sliders[i].minHandle)), 4)
 					SetSpritePosition(ui.sliders[i].activeTrack, GetSpriteXByOffset(ui.sliders[i].minHandle), GetSpriteY(ui.sliders[i].container) + 27)	
@@ -611,6 +671,7 @@ do
 							SetParticlesVisible(particles, 0)
 							selectedCategory = CATEGORY_COS_SIN_ORBIT
 							if (lastSelectedCategory <> selectedCategory)
+								propertiesChanged = 0
 								ResetProperties()
 								redrawUI = 1
 							endif
@@ -621,6 +682,7 @@ do
 							SetParticlesVisible(particles, 1)
 							selectedCategory = CATEGORY_2D_PARTICLES
 							if (lastSelectedCategory <> selectedCategory)
+								propertiesChanged = 0
 								ResetProperties()
 								redrawUI = 1
 								recreateParticles = 1
@@ -632,6 +694,7 @@ do
 							SetParticlesVisible(particles, 0)
 							selectedCategory = CATEGORY_2D_TWEENS
 							if (lastSelectedCategory <> selectedCategory)
+								propertiesChanged = 0
 								ResetProperties()
 								redrawUI = 1
 							endif
@@ -643,6 +706,7 @@ do
 							SetParticlesVisible(particles, 0)
 							selectedCategory = CATEGORY_SINE_WAVES
 							if (lastSelectedCategory <> selectedCategory) 
+								propertiesChanged = 0
 								ResetProperties()
 								redrawUI = 1
 							endif
@@ -725,7 +789,7 @@ do
 							particlesKeyFrames[keyFrame].redMin# = 0
 							particlesKeyFrames[keyFrame].redMax# = 255
 							particlesKeyFrames[keyFrame].scaleMin# = 0
-							particlesKeyFrames[keyFrame].scaleMax# = 255
+							particlesKeyFrames[keyFrame].scaleMax# = 10
 							particlesKeyFrames[keyFrame].timeMin# = 0
 							particlesKeyFrames[keyFrame].timeMax# = 999
 							particlesKeyFrames[keyFrame].container = CreateSprite(0)
@@ -821,7 +885,106 @@ do
 							SetSpriteSize(particlesKeyFrames[keyFrame].deleteIcon, 20, 20)
 							SetSpritePosition(particlesKeyFrames[keyFrame].deleteIcon, GetSpriteX(particlesKeyFrames[keyFrame].container) + GetSpriteWidth(particlesKeyFrames[keyFrame].container) - GetSpriteWidth(particlesKeyFrames[keyFrame].deleteIcon), GetEditBoxY(particlesKeyFrames[keyFrame].alphaEditbox) + (GetEditBoxHeight(particlesKeyFrames[keyFrame].alphaEditbox) / 2) - (GetSpriteHeight(particlesKeyFrames[keyFrame].deleteIcon) / 2))
 							FixSpriteToScreen(particlesKeyFrames[keyFrame].deleteIcon, 1)
+							propertiesChanged = 1
+				
+						endif
+						if (ui.panels[propertiesPanelIndex].buttons[i].name$ = "AddForceKeyFrame")
 							
+							particlesKeyFrames.insert(blankParticlesKeyFrame)
+							keyFrame = particlesKeyFrames.length
+							particlesKeyFrames[keyFrame].group$ = "Force"
+							particlesKeyFrames[keyFrame].endTimeValue# = 0
+							particlesKeyFrames[keyFrame].timeValue# = 0.0
+							particlesKeyFrames[keyFrame].xValue# = 0
+							particlesKeyFrames[keyFrame].yValue# = 0
+							
+							a = propertiesPanelIndex
+							particlesKeyFrames[keyFrame].endTimeMin# = 0
+							particlesKeyFrames[keyFrame].endTimeMax# = 999
+							particlesKeyFrames[keyFrame].timeMin# = 0
+							particlesKeyFrames[keyFrame].timeMax# = 999
+							particlesKeyFrames[keyFrame].xMin# = -1000
+							particlesKeyFrames[keyFrame].xMax# = 1000
+							particlesKeyFrames[keyFrame].yMin# = -1000
+							particlesKeyFrames[keyFrame].yMax# = 1000
+							particlesKeyFrames[keyFrame].container = CreateSprite(0)
+							SetSpriteSize(particlesKeyFrames[keyFrame].container, 260, 38)
+							if (keyFrame = 0)
+								SetSpritePosition(particlesKeyFrames[keyFrame].container, GetSpriteX(ui.panels[a].background) + 20, GetSpriteY(ui.panels[a].subHeaders[0].container) + GetSpriteHeight(ui.panels[a].subHeaders[0].container) + 10)
+							else
+								SetSpritePosition(particlesKeyFrames[keyFrame].container, GetSpriteX(ui.panels[a].background) + 20, GetSpriteY(particlesKeyFrames[keyFrame - 1].container) + GetSpriteHeight(particlesKeyFrames[keyFrame - 1].container) + 12)
+							endif
+							SetSpriteColor(particlesKeyFrames[keyFrame].container, 255, 255, 0, 0)
+							particlesKeyFrames[keyFrame].timeLabel = CreateText("S. Time")
+							SetTextSize(particlesKeyFrames[keyFrame].timeLabel, defaultTextSize#)
+							SetTextPosition(particlesKeyFrames[keyFrame].timeLabel, GetSpriteX(particlesKeyFrames[keyFrame].container) + (48 * 0), GetSpriteY(particlesKeyFrames[keyFrame].container))
+							SetTextDepth(particlesKeyFrames[keyFrame].timeLabel, GetSpriteDepth(ui.panels[a].background) - 1)
+							FixTextToScreen(particlesKeyFrames[keyFrame].timeLabel, 1)
+							particlesKeyFrames[keyFrame].timeEditbox = CreateEditBox()
+							SetEditBoxText(particlesKeyFrames[keyFrame].timeEditbox, str(particlesKeyFrames[keyFrame].timeValue#, 2))
+							SetEditBoxSize(particlesKeyFrames[keyFrame].timeEditbox, 41, GetEditBoxHeight(particlesKeyFrames[keyFrame].timeEditbox))
+							SetEditBoxPosition(particlesKeyFrames[keyFrame].timeEditbox, GetSpriteX(particlesKeyFrames[keyFrame].container) + (48 * 0), GetSpriteY(particlesKeyFrames[keyFrame].container) + GetSpriteHeight(particlesKeyFrames[keyFrame].container) - GetEditBoxHeight(particlesKeyFrames[keyFrame].timeEditbox))
+							SetEditBoxBorderSize(particlesKeyFrames[keyFrame].timeEditbox, 1)
+							SetEditBoxBorderColor(particlesKeyFrames[keyFrame].timeEditbox, 90, 88, 91, 255)
+							SetEditBoxInputType(particlesKeyFrames[keyFrame].timeEditbox, 1)
+							SetEditBoxBackgroundColor(particlesKeyFrames[keyFrame].timeEditbox, 61, 57, 60, 255)
+							SetEditBoxTextColor(particlesKeyFrames[keyFrame].timeEditbox, 255, 255, 255)
+							SetEditBoxDepth(particlesKeyFrames[keyFrame].timeEditbox, GetSpriteDepth(ui.panels[a].background) - 1)
+							FixEditBoxToScreen(particlesKeyFrames[keyFrame].timeEditbox, 1)
+							particlesKeyFrames[keyFrame].endTimeLabel = CreateText("E. Time")
+							SetTextSize(particlesKeyFrames[keyFrame].endTimeLabel, defaultTextSize#)
+							SetTextPosition(particlesKeyFrames[keyFrame].endTimeLabel, GetSpriteX(particlesKeyFrames[keyFrame].container) + (48 * 1), GetSpriteY(particlesKeyFrames[keyFrame].container))
+							SetTextDepth(particlesKeyFrames[keyFrame].endTimeLabel, GetSpriteDepth(ui.panels[a].background) - 1)
+							FixTextToScreen(particlesKeyFrames[keyFrame].endTimeLabel, 1)
+							particlesKeyFrames[keyFrame].endTimeEditbox = CreateEditBox()
+							SetEditBoxText(particlesKeyFrames[keyFrame].endTimeEditbox, str(particlesKeyFrames[keyFrame].endTimeValue#, 2))
+							SetEditBoxSize(particlesKeyFrames[keyFrame].endTimeEditbox, 41, GetEditBoxHeight(particlesKeyFrames[keyFrame].endTimeEditbox))
+							SetEditBoxPosition(particlesKeyFrames[keyFrame].endTimeEditbox, GetSpriteX(particlesKeyFrames[keyFrame].container) + (48 * 1), GetSpriteY(particlesKeyFrames[keyFrame].container) + GetSpriteHeight(particlesKeyFrames[keyFrame].container) - GetEditBoxHeight(particlesKeyFrames[keyFrame].endTimeEditbox))
+							SetEditBoxBorderSize(particlesKeyFrames[keyFrame].endTimeEditbox, 1)
+							SetEditBoxBorderColor(particlesKeyFrames[keyFrame].endTimeEditbox, 90, 88, 91, 255)
+							SetEditBoxInputType(particlesKeyFrames[keyFrame].endTimeEditbox, 1)
+							SetEditBoxBackgroundColor(particlesKeyFrames[keyFrame].endTimeEditbox, 61, 57, 60, 255)
+							SetEditBoxTextColor(particlesKeyFrames[keyFrame].endTimeEditbox, 255, 255, 255)
+							SetEditBoxDepth(particlesKeyFrames[keyFrame].endTimeEditbox, GetSpriteDepth(ui.panels[a].background) - 1)
+							FixEditBoxToScreen(particlesKeyFrames[keyFrame].endTimeEditbox, 1)
+							particlesKeyFrames[keyFrame].xLabel = CreateText("X")
+							SetTextSize(particlesKeyFrames[keyFrame].xLabel, defaultTextSize#)
+							SetTextPosition(particlesKeyFrames[keyFrame].xLabel, GetSpriteX(particlesKeyFrames[keyFrame].container) + (48 * 2), GetSpriteY(particlesKeyFrames[keyFrame].container))
+							SetTextDepth(particlesKeyFrames[keyFrame].xLabel, GetSpriteDepth(ui.panels[a].background) - 1)
+							FixTextToScreen(particlesKeyFrames[keyFrame].xLabel, 1)
+							particlesKeyFrames[keyFrame].xEditbox = CreateEditBox()
+							SetEditBoxText(particlesKeyFrames[keyFrame].xEditbox, str(particlesKeyFrames[keyFrame].xValue#, 2))
+							SetEditBoxSize(particlesKeyFrames[keyFrame].xEditbox, 41, GetEditBoxHeight(particlesKeyFrames[keyFrame].xEditbox))
+							SetEditBoxPosition(particlesKeyFrames[keyFrame].xEditbox, GetSpriteX(particlesKeyFrames[keyFrame].container) + (48 * 2), GetSpriteY(particlesKeyFrames[keyFrame].container) + GetSpriteHeight(particlesKeyFrames[keyFrame].container) - GetEditBoxHeight(particlesKeyFrames[keyFrame].xEditbox))
+							SetEditBoxBorderSize(particlesKeyFrames[keyFrame].xEditbox, 1)
+							SetEditBoxBorderColor(particlesKeyFrames[keyFrame].xEditbox, 90, 88, 91, 255)
+							SetEditBoxInputType(particlesKeyFrames[keyFrame].xEditbox, 1)
+							SetEditBoxBackgroundColor(particlesKeyFrames[keyFrame].xEditbox, 61, 57, 60, 255)
+							SetEditBoxTextColor(particlesKeyFrames[keyFrame].xEditbox, 255, 255, 255)
+							SetEditBoxDepth(particlesKeyFrames[keyFrame].xEditbox, GetSpriteDepth(ui.panels[a].background) - 1)
+							FixEditBoxToScreen(particlesKeyFrames[keyFrame].xEditbox, 1)
+							particlesKeyFrames[keyFrame].yLabel = CreateText("Y")
+							SetTextSize(particlesKeyFrames[keyFrame].yLabel, defaultTextSize#)
+							SetTextPosition(particlesKeyFrames[keyFrame].yLabel, GetSpriteX(particlesKeyFrames[keyFrame].container) + (48 * 3), GetSpriteY(particlesKeyFrames[keyFrame].container))
+							SetTextDepth(particlesKeyFrames[keyFrame].yLabel, GetSpriteDepth(ui.panels[a].background) - 1)
+							FixTextToScreen(particlesKeyFrames[keyFrame].yLabel, 1)
+							particlesKeyFrames[keyFrame].yEditbox = CreateEditBox()
+							SetEditBoxText(particlesKeyFrames[keyFrame].yEditbox, str(particlesKeyFrames[keyFrame].yValue#, 2))
+							SetEditBoxSize(particlesKeyFrames[keyFrame].yEditbox, 41, GetEditBoxHeight(particlesKeyFrames[keyFrame].yEditbox))
+							SetEditBoxPosition(particlesKeyFrames[keyFrame].yEditbox, GetSpriteX(particlesKeyFrames[keyFrame].container) + (48 * 3), GetSpriteY(particlesKeyFrames[keyFrame].container) + GetSpriteHeight(particlesKeyFrames[keyFrame].container) - GetEditBoxHeight(particlesKeyFrames[keyFrame].yEditbox))
+							SetEditBoxBorderSize(particlesKeyFrames[keyFrame].yEditbox, 1)
+							SetEditBoxBorderColor(particlesKeyFrames[keyFrame].yEditbox, 90, 88, 91, 255)
+							SetEditBoxInputType(particlesKeyFrames[keyFrame].yEditbox, 1)
+							SetEditBoxBackgroundColor(particlesKeyFrames[keyFrame].yEditbox, 61, 57, 60, 255)
+							SetEditBoxTextColor(particlesKeyFrames[keyFrame].yEditbox, 255, 255, 255)
+							SetEditBoxDepth(particlesKeyFrames[keyFrame].yEditbox, GetSpriteDepth(ui.panels[a].background) - 1)
+							FixEditBoxToScreen(particlesKeyFrames[keyFrame].yEditbox, 1)
+							particlesKeyFrames[keyFrame].deleteIcon = CreateSprite(GetIconImageID("delete"))
+							SetSpriteColor(particlesKeyFrames[keyFrame].deleteIcon, 147, 145, 147, 255)
+							SetSpriteSize(particlesKeyFrames[keyFrame].deleteIcon, 20, 20)
+							SetSpritePosition(particlesKeyFrames[keyFrame].deleteIcon, GetSpriteX(particlesKeyFrames[keyFrame].container) + GetSpriteWidth(particlesKeyFrames[keyFrame].container) - GetSpriteWidth(particlesKeyFrames[keyFrame].deleteIcon), GetEditBoxY(particlesKeyFrames[keyFrame].yEditbox) + (GetEditBoxHeight(particlesKeyFrames[keyFrame].yEditbox) / 2) - (GetSpriteHeight(particlesKeyFrames[keyFrame].deleteIcon) / 2))
+							FixSpriteToScreen(particlesKeyFrames[keyFrame].deleteIcon, 1)
+							propertiesChanged = 1
 				
 						endif
 						if (ui.panels[propertiesPanelIndex].buttons[i].name$ = "AddScaleKeyFrame")
@@ -834,7 +997,7 @@ do
 							
 							a = propertiesPanelIndex
 							particlesKeyFrames[keyFrame].scaleMin# = 0
-							particlesKeyFrames[keyFrame].scaleMax# = 999
+							particlesKeyFrames[keyFrame].scaleMax# = 10
 							particlesKeyFrames[keyFrame].timeMin# = 0
 							particlesKeyFrames[keyFrame].timeMax# = 999
 							particlesKeyFrames[keyFrame].container = CreateSprite(0)
@@ -882,6 +1045,7 @@ do
 							SetSpriteSize(particlesKeyFrames[keyFrame].deleteIcon, 20, 20)
 							SetSpritePosition(particlesKeyFrames[keyFrame].deleteIcon, GetSpriteX(particlesKeyFrames[keyFrame].container) + GetSpriteWidth(particlesKeyFrames[keyFrame].container) - GetSpriteWidth(particlesKeyFrames[keyFrame].deleteIcon), GetEditBoxY(particlesKeyFrames[keyFrame].scaleEditbox) + (GetEditBoxHeight(particlesKeyFrames[keyFrame].scaleEditbox) / 2) - (GetSpriteHeight(particlesKeyFrames[keyFrame].deleteIcon) / 2))
 							FixSpriteToScreen(particlesKeyFrames[keyFrame].deleteIcon, 1)
+							propertiesChanged = 1
 						endif
 					endif
 				next
@@ -943,24 +1107,31 @@ do
 							SetSpriteImage(ui.checkboxes[i].foreground, GetIconImageID("check"))
 							SetSpriteColor(ui.checkboxes[i].foreground, 255, 255, 255, 255)
 						endif
+						propertiesChanged = 1
 					endif
 				next
 				for keyFrame = 0 to particlesKeyFrames.length
 					if (spriteReleased = particlesKeyFrames[keyFrame].deleteIcon)
-						DeleteSprite(particlesKeyFrames[keyFrame].container)
-						DeleteText(particlesKeyFrames[keyFrame].timeLabel)
-						DeleteEditBox(particlesKeyFrames[keyFrame].timeEditbox)
-						DeleteText(particlesKeyFrames[keyFrame].redLabel)
-						DeleteEditBox(particlesKeyFrames[keyFrame].redEditbox)
-						DeleteText(particlesKeyFrames[keyFrame].greenLabel)
-						DeleteEditBox(particlesKeyFrames[keyFrame].greenEditbox)
-						DeleteText(particlesKeyFrames[keyFrame].blueLabel)
-						DeleteEditBox(particlesKeyFrames[keyFrame].blueEditbox)
 						DeleteText(particlesKeyFrames[keyFrame].alphaLabel)
 						DeleteEditBox(particlesKeyFrames[keyFrame].alphaEditbox)
+						DeleteText(particlesKeyFrames[keyFrame].blueLabel)
+						DeleteEditBox(particlesKeyFrames[keyFrame].blueEditbox)
+						DeleteSprite(particlesKeyFrames[keyFrame].container)
+						DeleteSprite(particlesKeyFrames[keyFrame].deleteIcon)
+						DeleteText(particlesKeyFrames[keyFrame].endTimeLabel)
+						DeleteEditBox(particlesKeyFrames[keyFrame].endTimeEditbox)
+						DeleteText(particlesKeyFrames[keyFrame].greenLabel)
+						DeleteEditBox(particlesKeyFrames[keyFrame].greenEditbox)
+						DeleteText(particlesKeyFrames[keyFrame].redLabel)
+						DeleteEditBox(particlesKeyFrames[keyFrame].redEditbox)
 						DeleteText(particlesKeyFrames[keyFrame].scaleLabel)
 						DeleteEditBox(particlesKeyFrames[keyFrame].scaleEditbox)
-						DeleteSprite(particlesKeyFrames[keyFrame].deleteIcon)
+						DeleteText(particlesKeyFrames[keyFrame].timeLabel)
+						DeleteEditBox(particlesKeyFrames[keyFrame].timeEditbox)
+						DeleteText(particlesKeyFrames[keyFrame].xLabel)
+						DeleteEditBox(particlesKeyFrames[keyFrame].xEditbox)
+						DeleteText(particlesKeyFrames[keyFrame].yLabel)
+						DeleteEditBox(particlesKeyFrames[keyFrame].yEditbox)
 						particlesKeyFrames.remove(keyFrame)
 						exit
 					endif
@@ -974,6 +1145,13 @@ do
 	
 	UpdateUIListener()
 	
+	tabPressed = GetRawKeyPressed(9)
+	shiftTabPressed = 0
+	if (GetRawKeyState(16) and GetRawKeyPressed(9))
+		shiftTabPressed = 1
+		tabPressed = 0
+	endif
+	
 	for i = 0 to particlesKeyFrames.length
 		if (particlesKeyFrames[i].group$ = "Color")
 			if (GetEditBoxExists(particlesKeyFrames[i].timeEditbox))
@@ -982,26 +1160,27 @@ do
 				if (GetEditBoxText(particlesKeyFrames[i].greenEditbox) = "-0") then SetEditBoxText(particlesKeyFrames[i].greenEditbox, "0")
 				if (GetEditBoxText(particlesKeyFrames[i].redEditbox) = "-0") then SetEditBoxText(particlesKeyFrames[i].redEditbox, "0")
 				if (GetEditBoxText(particlesKeyFrames[i].timeEditbox) = "-0") then SetEditBoxText(particlesKeyFrames[i].timeEditbox, "0")
-				if (GetEditBoxHasFocus(particlesKeyFrames[i].alphaEditbox))
-					SetEditBoxBorderSize(particlesKeyFrames[i].alphaEditbox, 2)
-					SetEditBoxBorderColor(particlesKeyFrames[i].alphaEditbox, 146, 143, 46, 200)
-				else
-					SetEditBoxBorderSize(particlesKeyFrames[i].alphaEditbox, 1)
-					SetEditBoxBorderColor(particlesKeyFrames[i].alphaEditbox, 90, 88, 91, 200)
+				if (GetEditBoxHasFocus(particlesKeyFrames[i].timeEditbox) and tabPressed = 1)
+					SetEditBoxFocus(particlesKeyFrames[i].timeEditbox, 0)
+					SetEditBoxFocus(particlesKeyFrames[i].redEditbox, 1)
+					tabPressed = 0
 				endif
-				if (GetEditBoxHasFocus(particlesKeyFrames[i].blueEditbox))
-					SetEditBoxBorderSize(particlesKeyFrames[i].blueEditbox, 2)
-					SetEditBoxBorderColor(particlesKeyFrames[i].blueEditbox, 146, 143, 46, 200)
+				if (GetEditBoxHasFocus(particlesKeyFrames[i].timeEditbox))
+					SetEditBoxBorderSize(particlesKeyFrames[i].timeEditbox, 2)
+					SetEditBoxBorderColor(particlesKeyFrames[i].timeEditbox, 146, 143, 46, 200)
 				else
-					SetEditBoxBorderSize(particlesKeyFrames[i].blueEditbox, 1)
-					SetEditBoxBorderColor(particlesKeyFrames[i].blueEditbox, 90, 88, 91, 200)
+					SetEditBoxBorderSize(particlesKeyFrames[i].timeEditbox, 1)
+					SetEditBoxBorderColor(particlesKeyFrames[i].timeEditbox, 90, 88, 91, 200)
 				endif
-				if (GetEditBoxHasFocus(particlesKeyFrames[i].greenEditbox))
-					SetEditBoxBorderSize(particlesKeyFrames[i].greenEditbox, 2)
-					SetEditBoxBorderColor(particlesKeyFrames[i].greenEditbox, 146, 143, 46, 200)
-				else
-					SetEditBoxBorderSize(particlesKeyFrames[i].greenEditbox, 1)
-					SetEditBoxBorderColor(particlesKeyFrames[i].greenEditbox, 90, 88, 91, 200)
+				if (GetEditBoxHasFocus(particlesKeyFrames[i].redEditbox) and tabPressed = 1)
+					SetEditBoxFocus(particlesKeyFrames[i].redEditbox, 0)
+					SetEditBoxFocus(particlesKeyFrames[i].greenEditbox, 1)
+					tabPressed = 0
+				endif
+				if (GetEditBoxHasFocus(particlesKeyFrames[i].redEditbox) and shiftTabPressed = 1)
+					SetEditBoxFocus(particlesKeyFrames[i].redEditbox, 0)
+					SetEditBoxFocus(particlesKeyFrames[i].timeEditbox, 1)
+					shiftTabPressed = 0
 				endif
 				if (GetEditBoxHasFocus(particlesKeyFrames[i].redEditbox))
 					SetEditBoxBorderSize(particlesKeyFrames[i].redEditbox, 2)
@@ -1010,12 +1189,51 @@ do
 					SetEditBoxBorderSize(particlesKeyFrames[i].redEditbox, 1)
 					SetEditBoxBorderColor(particlesKeyFrames[i].redEditbox, 90, 88, 91, 200)
 				endif
-				if (GetEditBoxHasFocus(particlesKeyFrames[i].timeEditbox))
-					SetEditBoxBorderSize(particlesKeyFrames[i].timeEditbox, 2)
-					SetEditBoxBorderColor(particlesKeyFrames[i].timeEditbox, 146, 143, 46, 200)
+				if (GetEditBoxHasFocus(particlesKeyFrames[i].greenEditbox) and tabPressed = 1)
+					SetEditBoxFocus(particlesKeyFrames[i].greenEditbox, 0)
+					SetEditBoxFocus(particlesKeyFrames[i].blueEditbox, 1)
+					tabPressed = 0
+				endif
+				if (GetEditBoxHasFocus(particlesKeyFrames[i].greenEditbox) and shiftTabPressed = 1)
+					SetEditBoxFocus(particlesKeyFrames[i].greenEditbox, 0)
+					SetEditBoxFocus(particlesKeyFrames[i].redEditbox, 1)
+					shiftTabPressed = 0
+				endif
+				if (GetEditBoxHasFocus(particlesKeyFrames[i].greenEditbox))
+					SetEditBoxBorderSize(particlesKeyFrames[i].greenEditbox, 2)
+					SetEditBoxBorderColor(particlesKeyFrames[i].greenEditbox, 146, 143, 46, 200)
 				else
-					SetEditBoxBorderSize(particlesKeyFrames[i].timeEditbox, 1)
-					SetEditBoxBorderColor(particlesKeyFrames[i].timeEditbox, 90, 88, 91, 200)
+					SetEditBoxBorderSize(particlesKeyFrames[i].greenEditbox, 1)
+					SetEditBoxBorderColor(particlesKeyFrames[i].greenEditbox, 90, 88, 91, 200)
+				endif
+				if (GetEditBoxHasFocus(particlesKeyFrames[i].blueEditbox) and tabPressed = 1)
+					SetEditBoxFocus(particlesKeyFrames[i].blueEditbox, 0)
+					SetEditBoxFocus(particlesKeyFrames[i].alphaEditbox, 1)
+					tabPressed = 0
+				endif
+				if (GetEditBoxHasFocus(particlesKeyFrames[i].blueEditbox) and shiftTabPressed = 1)
+					SetEditBoxFocus(particlesKeyFrames[i].blueEditbox, 0)
+					SetEditBoxFocus(particlesKeyFrames[i].greenEditbox, 1)
+					shiftTabPressed = 0
+				endif
+				if (GetEditBoxHasFocus(particlesKeyFrames[i].blueEditbox))
+					SetEditBoxBorderSize(particlesKeyFrames[i].blueEditbox, 2)
+					SetEditBoxBorderColor(particlesKeyFrames[i].blueEditbox, 146, 143, 46, 200)
+				else
+					SetEditBoxBorderSize(particlesKeyFrames[i].blueEditbox, 1)
+					SetEditBoxBorderColor(particlesKeyFrames[i].blueEditbox, 90, 88, 91, 200)
+				endif
+				if (GetEditBoxHasFocus(particlesKeyFrames[i].alphaEditbox) and shiftTabPressed = 1)
+					SetEditBoxFocus(particlesKeyFrames[i].alphaEditbox, 0)
+					SetEditBoxFocus(particlesKeyFrames[i].blueEditbox, 1)
+					shiftTabPressed = 0
+				endif
+				if (GetEditBoxHasFocus(particlesKeyFrames[i].alphaEditbox))
+					SetEditBoxBorderSize(particlesKeyFrames[i].alphaEditbox, 2)
+					SetEditBoxBorderColor(particlesKeyFrames[i].alphaEditbox, 146, 143, 46, 200)
+				else
+					SetEditBoxBorderSize(particlesKeyFrames[i].alphaEditbox, 1)
+					SetEditBoxBorderColor(particlesKeyFrames[i].alphaEditbox, 90, 88, 91, 200)
 				endif
 				if (GetEditBoxChanged(particlesKeyFrames[i].alphaEditbox))
 					if (valFloat(GetEditBoxText(particlesKeyFrames[i].alphaEditbox)) < particlesKeyFrames[i].alphaMin#)
@@ -1064,16 +1282,16 @@ do
 				endif
 			endif
 		endif
-		if (particlesKeyFrames[i].group$ = "Scale")
-			if (GetEditBoxExists(particlesKeyFrames[i].scaleEditbox) and GetEditBoxExists(particlesKeyFrames[i].timeEditbox))
-				if (GetEditBoxText(particlesKeyFrames[i].scaleEditbox) = "-0") then SetEditBoxText(particlesKeyFrames[i].scaleEditbox, "0")
+		if (particlesKeyFrames[i].group$ = "Force")
+			if (GetEditBoxExists(particlesKeyFrames[i].timeEditbox))
+				if (GetEditBoxText(particlesKeyFrames[i].endTimeEditbox) = "-0") then SetEditBoxText(particlesKeyFrames[i].endTimeEditbox, "0")
 				if (GetEditBoxText(particlesKeyFrames[i].timeEditbox) = "-0") then SetEditBoxText(particlesKeyFrames[i].timeEditbox, "0")
-				if (GetEditBoxHasFocus(particlesKeyFrames[i].scaleEditbox))
-					SetEditBoxBorderSize(particlesKeyFrames[i].scaleEditbox, 2)
-					SetEditBoxBorderColor(particlesKeyFrames[i].scaleEditbox, 146, 143, 46, 200)
-				else
-					SetEditBoxBorderSize(particlesKeyFrames[i].scaleEditbox, 1)
-					SetEditBoxBorderColor(particlesKeyFrames[i].scaleEditbox, 90, 88, 91, 200)
+				if (GetEditBoxText(particlesKeyFrames[i].xEditbox) = "-0") then SetEditBoxText(particlesKeyFrames[i].xEditbox, "0")
+				if (GetEditBoxText(particlesKeyFrames[i].yEditbox) = "-0") then SetEditBoxText(particlesKeyFrames[i].yEditbox, "0")
+				if (GetEditBoxHasFocus(particlesKeyFrames[i].timeEditbox) and tabPressed = 1)
+					SetEditBoxFocus(particlesKeyFrames[i].timeEditbox, 0)
+					SetEditBoxFocus(particlesKeyFrames[i].endTimeEditbox, 1)
+					tabPressed = 0
 				endif
 				if (GetEditBoxHasFocus(particlesKeyFrames[i].timeEditbox))
 					SetEditBoxBorderSize(particlesKeyFrames[i].timeEditbox, 2)
@@ -1081,6 +1299,118 @@ do
 				else
 					SetEditBoxBorderSize(particlesKeyFrames[i].timeEditbox, 1)
 					SetEditBoxBorderColor(particlesKeyFrames[i].timeEditbox, 90, 88, 91, 200)
+				endif
+				if (GetEditBoxHasFocus(particlesKeyFrames[i].endTimeEditbox) and tabPressed = 1)
+					SetEditBoxFocus(particlesKeyFrames[i].endTimeEditbox, 0)
+					SetEditBoxFocus(particlesKeyFrames[i].xEditbox, 1)
+					tabPressed = 0
+				endif
+				if (GetEditBoxHasFocus(particlesKeyFrames[i].endTimeEditbox) and shiftTabPressed = 1)
+					SetEditBoxFocus(particlesKeyFrames[i].endTimeEditbox, 0)
+					SetEditBoxFocus(particlesKeyFrames[i].timeEditbox, 1)
+					shiftTabPressed = 0
+				endif
+				if (GetEditBoxHasFocus(particlesKeyFrames[i].endTimeEditbox))
+					SetEditBoxBorderSize(particlesKeyFrames[i].endTimeEditbox, 2)
+					SetEditBoxBorderColor(particlesKeyFrames[i].endTimeEditbox, 146, 143, 46, 200)
+				else
+					SetEditBoxBorderSize(particlesKeyFrames[i].endTimeEditbox, 1)
+					SetEditBoxBorderColor(particlesKeyFrames[i].endTimeEditbox, 90, 88, 91, 200)
+				endif
+				if (GetEditBoxHasFocus(particlesKeyFrames[i].xEditbox) and tabPressed = 1)
+					SetEditBoxFocus(particlesKeyFrames[i].xEditbox, 0)
+					SetEditBoxFocus(particlesKeyFrames[i].yEditbox, 1)
+					tabPressed = 0
+				endif
+				if (GetEditBoxHasFocus(particlesKeyFrames[i].xEditbox) and shiftTabPressed = 1)
+					SetEditBoxFocus(particlesKeyFrames[i].xEditbox, 0)
+					SetEditBoxFocus(particlesKeyFrames[i].endTimeEditbox, 1)
+					shiftTabPressed = 0
+				endif
+				if (GetEditBoxHasFocus(particlesKeyFrames[i].xEditbox))
+					SetEditBoxBorderSize(particlesKeyFrames[i].xEditbox, 2)
+					SetEditBoxBorderColor(particlesKeyFrames[i].xEditbox, 146, 143, 46, 200)
+				else
+					SetEditBoxBorderSize(particlesKeyFrames[i].xEditbox, 1)
+					SetEditBoxBorderColor(particlesKeyFrames[i].xEditbox, 90, 88, 91, 200)
+				endif
+				if (GetEditBoxHasFocus(particlesKeyFrames[i].yEditbox) and shiftTabPressed = 1)
+					SetEditBoxFocus(particlesKeyFrames[i].yEditbox, 0)
+					SetEditBoxFocus(particlesKeyFrames[i].xEditbox, 1)
+					shiftTabPressed = 0
+				endif
+				if (GetEditBoxHasFocus(particlesKeyFrames[i].yEditbox))
+					SetEditBoxBorderSize(particlesKeyFrames[i].yEditbox, 2)
+					SetEditBoxBorderColor(particlesKeyFrames[i].yEditbox, 146, 143, 46, 200)
+				else
+					SetEditBoxBorderSize(particlesKeyFrames[i].yEditbox, 1)
+					SetEditBoxBorderColor(particlesKeyFrames[i].yEditbox, 90, 88, 91, 200)
+				endif
+				if (GetEditBoxChanged(particlesKeyFrames[i].endTimeEditbox))
+					if (valFloat(GetEditBoxText(particlesKeyFrames[i].endTimeEditbox)) < particlesKeyFrames[i].endTimeMin#)
+						SetEditBoxText(particlesKeyFrames[i].endTimeEditbox, str(particlesKeyFrames[i].endTimeMin#, 0))
+					endif
+					if (valFloat(GetEditBoxText(particlesKeyFrames[i].endTimeEditbox)) > particlesKeyFrames[i].endTimeMax#)
+						SetEditBoxText(particlesKeyFrames[i].endTimeEditbox, str(particlesKeyFrames[i].endTimeMax#, 0))
+					endif
+					particlesKeyFrames[i].endTimeValue# = valFloat(GetEditBoxText(particlesKeyFrames[i].endTimeEditbox))
+				endif
+				if (GetEditBoxChanged(particlesKeyFrames[i].timeEditbox))
+					if (valFloat(GetEditBoxText(particlesKeyFrames[i].timeEditbox)) < particlesKeyFrames[i].timeMin#)
+						SetEditBoxText(particlesKeyFrames[i].timeEditbox, str(particlesKeyFrames[i].timeMin#))
+					endif
+					if (valFloat(GetEditBoxText(particlesKeyFrames[i].timeEditbox)) > particlesKeyFrames[i].timeMax#)
+						SetEditBoxText(particlesKeyFrames[i].timeEditbox, str(particlesKeyFrames[i].timeMax#))
+					endif
+					particlesKeyFrames[i].timeValue# = valFloat(GetEditBoxText(particlesKeyFrames[i].timeEditbox))
+				endif
+				if (GetEditBoxChanged(particlesKeyFrames[i].xEditbox))
+					if (valFloat(GetEditBoxText(particlesKeyFrames[i].xEditbox)) < particlesKeyFrames[i].xMin#)
+						SetEditBoxText(particlesKeyFrames[i].xEditbox, str(particlesKeyFrames[i].xMin#, 0))
+					endif
+					if (valFloat(GetEditBoxText(particlesKeyFrames[i].xEditbox)) > particlesKeyFrames[i].xMax#)
+						SetEditBoxText(particlesKeyFrames[i].xEditbox, str(particlesKeyFrames[i].xMax#, 0))
+					endif
+					particlesKeyFrames[i].xValue# = valFloat(GetEditBoxText(particlesKeyFrames[i].xEditbox))
+				endif
+				if (GetEditBoxChanged(particlesKeyFrames[i].yEditbox))
+					if (valFloat(GetEditBoxText(particlesKeyFrames[i].yEditbox)) < particlesKeyFrames[i].yMin#)
+						SetEditBoxText(particlesKeyFrames[i].yEditbox, str(particlesKeyFrames[i].yMin#, 0))
+					endif
+					if (valFloat(GetEditBoxText(particlesKeyFrames[i].yEditbox)) > particlesKeyFrames[i].yMax#)
+						SetEditBoxText(particlesKeyFrames[i].yEditbox, str(particlesKeyFrames[i].yMax#, 0))
+					endif
+					particlesKeyFrames[i].yValue# = valFloat(GetEditBoxText(particlesKeyFrames[i].yEditbox))
+				endif
+			endif
+		endif
+		if (particlesKeyFrames[i].group$ = "Scale")
+			if (GetEditBoxExists(particlesKeyFrames[i].scaleEditbox) and GetEditBoxExists(particlesKeyFrames[i].timeEditbox))
+				if (GetEditBoxText(particlesKeyFrames[i].scaleEditbox) = "-0") then SetEditBoxText(particlesKeyFrames[i].scaleEditbox, "0")
+				if (GetEditBoxText(particlesKeyFrames[i].timeEditbox) = "-0") then SetEditBoxText(particlesKeyFrames[i].timeEditbox, "0")
+				if (GetEditBoxHasFocus(particlesKeyFrames[i].timeEditbox) and tabPressed = 1)
+					SetEditBoxFocus(particlesKeyFrames[i].timeEditbox, 0)
+					SetEditBoxFocus(particlesKeyFrames[i].scaleEditbox, 1)
+					tabPressed = 0
+				endif
+				if (GetEditBoxHasFocus(particlesKeyFrames[i].timeEditbox))
+					SetEditBoxBorderSize(particlesKeyFrames[i].timeEditbox, 2)
+					SetEditBoxBorderColor(particlesKeyFrames[i].timeEditbox, 146, 143, 46, 200)
+				else
+					SetEditBoxBorderSize(particlesKeyFrames[i].timeEditbox, 1)
+					SetEditBoxBorderColor(particlesKeyFrames[i].timeEditbox, 90, 88, 91, 200)
+				endif
+				if (GetEditBoxHasFocus(particlesKeyFrames[i].scaleEditbox) and shiftTabPressed = 1)
+					SetEditBoxFocus(particlesKeyFrames[i].scaleEditbox, 0)
+					SetEditBoxFocus(particlesKeyFrames[i].timeEditbox, 1)
+					shiftTabPressed = 0
+				endif
+				if (GetEditBoxHasFocus(particlesKeyFrames[i].scaleEditbox))
+					SetEditBoxBorderSize(particlesKeyFrames[i].scaleEditbox, 2)
+					SetEditBoxBorderColor(particlesKeyFrames[i].scaleEditbox, 146, 143, 46, 200)
+				else
+					SetEditBoxBorderSize(particlesKeyFrames[i].scaleEditbox, 1)
+					SetEditBoxBorderColor(particlesKeyFrames[i].scaleEditbox, 90, 88, 91, 200)
 				endif
 				if (GetEditBoxChanged(particlesKeyFrames[i].scaleEditbox))
 					if (valFloat(GetEditBoxText(particlesKeyFrames[i].scaleEditbox)) < particlesKeyFrames[i].scaleMin#)
@@ -1104,7 +1434,7 @@ do
 		endif
 	next
 
-	for i = 0 to 9		
+	for i = 0 to 11	
 		if (ui.sliders[i].rangeSlider = 0)
 			if (GetEditBoxText(ui.sliders[i].editbox) = "-0") then SetEditBoxText(ui.sliders[i].editbox, "0")
 			if (GetEditBoxChanged(ui.sliders[i].editbox))
@@ -1148,8 +1478,8 @@ do
 				if (valFloat(GetEditBoxText(ui.sliders[i].minEditbox)) > ui.sliders[i].max#)
 					SetEditBoxText(ui.sliders[i].minEditbox, str(ui.sliders[i].max#, 0))
 				endif
-				ui.sliders[i].value# = valFloat(GetEditBoxText(ui.sliders[i].minEditbox))
-				percentage# = ((ui.sliders[i].value# - ui.sliders[i].min#) / (ui.sliders[i].max# - ui.sliders[i].min#)) * 100.0
+				ui.sliders[i].minValue# = valFloat(GetEditBoxText(ui.sliders[i].minEditbox))
+				percentage# = ((ui.sliders[i].minValue# - ui.sliders[i].min#) / (ui.sliders[i].max# - ui.sliders[i].min#)) * 100.0
 				handleX# = ((GetSpriteWidth(ui.sliders[i].inactiveTrack) - GetSpriteWidth(ui.sliders[i].minHandle)) / 100.0) * percentage#
 				SetSpritePositionByOffset(ui.sliders[i].minHandle, GetSpriteX(ui.sliders[i].inactiveTrack) + (GetSpriteWidth(ui.sliders[i].minHandle) / 2) + handleX#, GetSpriteYByOffset(ui.sliders[i].inactiveTrack))	
 				SetSpriteSize(ui.sliders[i].activeTrack, abs(GetSpriteXByOffset(ui.sliders[i].maxHandle) - GetSpriteXByOffset(ui.sliders[i].minHandle)), 4)
@@ -1162,12 +1492,17 @@ do
 				if (valFloat(GetEditBoxText(ui.sliders[i].maxEditbox)) > ui.sliders[i].max#)
 					SetEditBoxText(ui.sliders[i].maxEditbox, str(ui.sliders[i].max#, 0))
 				endif
-				ui.sliders[i].value# = valFloat(GetEditBoxText(ui.sliders[i].maxEditbox))
-				percentage# = ((ui.sliders[i].value# - ui.sliders[i].min#) / (ui.sliders[i].max# - ui.sliders[i].min#)) * 100.0
+				ui.sliders[i].maxValue# = valFloat(GetEditBoxText(ui.sliders[i].maxEditbox))
+				percentage# = ((ui.sliders[i].maxValue# - ui.sliders[i].min#) / (ui.sliders[i].max# - ui.sliders[i].min#)) * 100.0
 				handleX# = ((GetSpriteWidth(ui.sliders[i].inactiveTrack) - GetSpriteWidth(ui.sliders[i].maxHandle)) / 100.0) * percentage#
 				SetSpritePositionByOffset(ui.sliders[i].maxHandle, GetSpriteX(ui.sliders[i].inactiveTrack) + (GetSpriteWidth(ui.sliders[i].maxHandle) / 2) + handleX#, GetSpriteYByOffset(ui.sliders[i].inactiveTrack))	
 				SetSpriteSize(ui.sliders[i].activeTrack, abs(GetSpriteXByOffset(ui.sliders[i].maxHandle) - GetSpriteXByOffset(ui.sliders[i].minHandle)), 4)
 				SetSpritePosition(ui.sliders[i].activeTrack, GetSpriteXByOffset(ui.sliders[i].minHandle), GetSpriteY(ui.sliders[i].container) + 27)	
+			endif
+			if (GetEditBoxHasFocus(ui.sliders[i].minEditbox) and tabPressed = 1)
+				SetEditBoxFocus(ui.sliders[i].minEditbox, 0)
+				SetEditBoxFocus(ui.sliders[i].maxEditbox, 1)
+				tabPressed = 0
 			endif
 			if (GetEditBoxHasFocus(ui.sliders[i].minEditbox))
 				SetEditBoxBorderSize(ui.sliders[i].minEditbox, 2)
@@ -1176,6 +1511,11 @@ do
 				//SetEditBoxBorderSize(ui.sliders[i].minEditbox, 0)
 				SetEditBoxBorderSize(ui.sliders[i].minEditbox, 1)
 				SetEditBoxBorderColor(ui.sliders[i].minEditbox, 90, 88, 91, 200)
+			endif
+			if (GetEditBoxHasFocus(ui.sliders[i].maxEditbox) and shiftTabPressed = 1)
+				SetEditBoxFocus(ui.sliders[i].maxEditbox, 0)
+				SetEditBoxFocus(ui.sliders[i].minEditbox, 1)
+				shiftTabPressed = 0
 			endif
 			if (GetEditBoxHasFocus(ui.sliders[i].maxEditbox))
 				SetEditBoxBorderSize(ui.sliders[i].maxEditbox, 2)
@@ -1367,27 +1707,55 @@ do
 		if (tabSelected = 0)
 			SetParticlesActive(particles, 1)
 			SetParticlesVisible(particles, 1)
-			SetParticlesAngle(particles, val(GetEditBoxText(ui.sliders[1].editbox)))
+			SetParticlesAngle(particles, val(GetEditBoxText(ui.sliders[3].editbox)))
 			SetParticlesDepth(particles, 100)
-			SetParticlesDirection(particles, val(GetEditBoxText(ui.sliders[2].editbox)), val(GetEditBoxText(ui.sliders[3].editbox)))
+			SetParticlesDirection(particles, val(GetEditBoxText(ui.sliders[4].editbox)), val(GetEditBoxText(ui.sliders[5].editbox)))
 			//SetParticlesFaceDirection(particles, ui.checkboxes[0].value)
-			SetParticlesFrequency(particles, val(GetEditBoxText(ui.sliders[4].editbox)))
+			SetParticlesFrequency(particles, val(GetEditBoxText(ui.sliders[6].editbox)))
 			if (ui.imageLoaders[0].value <> imgBlank)
 				SetParticlesImage(particles, ui.imageLoaders[0].value)
 			else
 				SetParticlesImage(particles, imgBlank)
 			endif
-			SetParticlesLife(particles, val(GetEditBoxText(ui.sliders[5].editbox)))
-			SetParticlesPosition(particles, categoriesPanelWidth# + ((GetWindowWidth() - categoriesPanelWidth# - propertiesPanelWidth#)  / 2), topPanelHeight# + tabsPanelHeight# + ((GetWindowHeight() - topPanelHeight# - tabsPanelHeight#) / 2))
-			SetParticlesSize(particles, val(GetEditBoxText(ui.sliders[0].editbox)))
-			SetParticlesStartZone(particles, val(GetEditBoxText(ui.sliders[7].minEditbox)), val(GetEditBoxText(ui.sliders[8].minEditbox)), val(GetEditBoxText(ui.sliders[7].maxEditbox)), val(GetEditBoxText(ui.sliders[8].maxEditbox)))
-			SetParticlesVelocityRange(particles, val(GetEditBoxText(ui.sliders[6].minEditbox)), val(GetEditBoxText(ui.sliders[6].maxEditbox)))
+			SetParticlesLife(particles, val(GetEditBoxText(ui.sliders[7].editbox)))
+			SetParticlesPosition(particles, ui.sliders[0].value#, ui.sliders[1].value#)
+			SetParticlesRotationRange(particles, val(GetEditBoxText(ui.sliders[9].minEditbox)), val(GetEditBoxText(ui.sliders[9].maxEditbox)))
+			SetParticlesSize(particles, val(GetEditBoxText(ui.sliders[2].editbox)))
+			SetParticlesStartZone(particles, val(GetEditBoxText(ui.sliders[10].minEditbox)), val(GetEditBoxText(ui.sliders[11].minEditbox)), val(GetEditBoxText(ui.sliders[10].maxEditbox)), val(GetEditBoxText(ui.sliders[11].maxEditbox)))
+			SetParticlesVelocityRange(particles, val(GetEditBoxText(ui.sliders[8].minEditbox)), val(GetEditBoxText(ui.sliders[8].maxEditbox)))
 			
 			ClearParticlesColors(particles)
+			ClearParticlesForces(particles)
 			ClearParticlesScales(particles)
 			for keyFrame = 0 to particlesKeyFrames.length
 				if (particlesKeyFrames[keyFrame].group$ = "Color")
-					AddParticlesColorKeyFrame(particles, particlesKeyFrames[keyFrame].timeValue#, particlesKeyFrames[keyFrame].redValue#, particlesKeyFrames[keyFrame].greenValue#, particlesKeyFrames[keyFrame].blueValue#, particlesKeyFrames[keyFrame].alphaValue#)
+					if (GetEditBoxText(particlesKeyFrames[keyFrame].redEditbox) = "?")
+						rgbR = random(0, 255)
+					else
+						rgbR = particlesKeyFrames[keyFrame].redValue#
+					endif
+					if (GetEditBoxText(particlesKeyFrames[keyFrame].greenEditbox) = "?")
+						rgbG = random(0, 255)
+					else
+						rgbG = particlesKeyFrames[keyFrame].greenValue#
+					endif
+					if (GetEditBoxText(particlesKeyFrames[keyFrame].blueEditbox) = "?")
+						rgbB = random(0, 255)
+					else
+						rgbB = particlesKeyFrames[keyFrame].blueValue#
+					endif
+					if (GetEditBoxText(particlesKeyFrames[keyFrame].alphaEditbox) = "?")
+						rgbA = random(0, 255)
+					else
+						rgbA = particlesKeyFrames[keyFrame].alphaValue#
+					endif
+					AddParticlesColorKeyFrame(particles, particlesKeyFrames[keyFrame].timeValue#, rgbR, rgbG, rgbB, rgbA)
+					//AddParticlesColorKeyFrame(particles, particlesKeyFrames[keyFrame].timeValue#, random(0, 255), random(0, 255), random(0, 255), particlesKeyFrames[keyFrame].alphaValue#)
+				endif
+			next
+			for keyFrame = 0 to particlesKeyFrames.length
+				if (particlesKeyFrames[keyFrame].group$ = "Force")
+					AddParticlesForce(particles, particlesKeyFrames[keyFrame].timeValue#, particlesKeyFrames[keyFrame].endTimeValue#, particlesKeyFrames[keyFrame].xValue#, particlesKeyFrames[keyFrame].yValue#)
 				endif
 			next
 			for keyFrame = 0 to particlesKeyFrames.length
@@ -1397,18 +1765,20 @@ do
 			next
 			if (ui.checkboxes[0].value = 1)
 				//SetSpriteColor(particlesStartZone, 255, 0, 0, 50)
-				SetSpriteSize(particlesStartZone, val(GetEditBoxText(ui.sliders[7].maxEditbox)) - val(GetEditBoxText(ui.sliders[7].minEditbox)), val(GetEditBoxText(ui.sliders[8].maxEditbox)) - val(GetEditBoxText(ui.sliders[8].minEditbox)))
-				SetSpritePosition(particlesStartZone, GetParticlesX(particles) + val(GetEditBoxText(ui.sliders[7].minEditbox)), GetParticlesY(particles) + val(GetEditBoxText(ui.sliders[8].minEditbox)))
-				//DrawLine(GetParticlesX(particles) + val(GetEditBoxText(ui.sliders[7].minEditbox)), GetParticlesY(particles) + val(GetEditBoxText(ui.sliders[8].minEditbox)), GetParticlesX(particles) + val(GetEditBoxText(ui.sliders[7].maxEditbox)), GetParticlesY(particles) + val(GetEditBoxText(ui.sliders[8].minEditbox)), 255, 0, 0)
-				//DrawLine(GetParticlesX(particles) + val(GetEditBoxText(ui.sliders[7].minEditbox)), GetParticlesY(particles) + val(GetEditBoxText(ui.sliders[8].maxEditbox)), GetParticlesX(particles) + val(GetEditBoxText(ui.sliders[7].maxEditbox)), GetParticlesY(particles) + val(GetEditBoxText(ui.sliders[8].maxEditbox)), 255, 0, 0)
-				//DrawLine(GetParticlesX(particles) + val(GetEditBoxText(ui.sliders[7].minEditbox)), GetParticlesY(particles) + val(GetEditBoxText(ui.sliders[8].minEditbox)), GetParticlesX(particles) + val(GetEditBoxText(ui.sliders[7].minEditbox)), GetParticlesY(particles) + val(GetEditBoxText(ui.sliders[8].maxEditbox)), 255, 0, 0)
-				//DrawLine(GetParticlesX(particles) + val(GetEditBoxText(ui.sliders[7].maxEditbox)), GetParticlesY(particles) + val(GetEditBoxText(ui.sliders[8].minEditbox)), GetParticlesX(particles) + val(GetEditBoxText(ui.sliders[7].maxEditbox)), GetParticlesY(particles) + val(GetEditBoxText(ui.sliders[8].maxEditbox)), 255, 0, 0)
+				SetSpriteSize(particlesStartZone, val(GetEditBoxText(ui.sliders[10].maxEditbox)) - val(GetEditBoxText(ui.sliders[10].minEditbox)), val(GetEditBoxText(ui.sliders[11].maxEditbox)) - val(GetEditBoxText(ui.sliders[11].minEditbox)))
+				SetSpritePosition(particlesStartZone, GetParticlesX(particles) + val(GetEditBoxText(ui.sliders[10].minEditbox)), GetParticlesY(particles) + val(GetEditBoxText(ui.sliders[11].minEditbox)))
+				SetSpriteDepth(particlesStartZone, 99)
+				//DrawLine(GetParticlesX(particles) + val(GetEditBoxText(ui.sliders[10].minEditbox)), GetParticlesY(particles) + val(GetEditBoxText(ui.sliders[11].minEditbox)), GetParticlesX(particles) + val(GetEditBoxText(ui.sliders[10].maxEditbox)), GetParticlesY(particles) + val(GetEditBoxText(ui.sliders[11].minEditbox)), 255, 0, 0)
+				//DrawLine(GetParticlesX(particles) + val(GetEditBoxText(ui.sliders[10].minEditbox)), GetParticlesY(particles) + val(GetEditBoxText(ui.sliders[11].maxEditbox)), GetParticlesX(particles) + val(GetEditBoxText(ui.sliders[10].maxEditbox)), GetParticlesY(particles) + val(GetEditBoxText(ui.sliders[11].maxEditbox)), 255, 0, 0)
+				//DrawLine(GetParticlesX(particles) + val(GetEditBoxText(ui.sliders[10].minEditbox)), GetParticlesY(particles) + val(GetEditBoxText(ui.sliders[11].minEditbox)), GetParticlesX(particles) + val(GetEditBoxText(ui.sliders[10].minEditbox)), GetParticlesY(particles) + val(GetEditBoxText(ui.sliders[11].maxEditbox)), 255, 0, 0)
+				//DrawLine(GetParticlesX(particles) + val(GetEditBoxText(ui.sliders[10].maxEditbox)), GetParticlesY(particles) + val(GetEditBoxText(ui.sliders[11].minEditbox)), GetParticlesX(particles) + val(GetEditBoxText(ui.sliders[10].maxEditbox)), GetParticlesY(particles) + val(GetEditBoxText(ui.sliders[11].maxEditbox)), 255, 0, 0)
 			else
 				SetSpritePosition(particlesStartZone, -99999, -99999)
 			endif
 		else
 			SetParticlesActive(particles, 0)
 			SetParticlesVisible(particles, 0)
+			SetSpritePosition(particlesStartZone, -99999, -99999)
 			//if (redrawCode = 1)
 				DeleteCodeLines()
 				codeLines.length = 100
@@ -1419,35 +1789,39 @@ do
 						CreateOrUpdateCodeLine(codeLine, "particleImage = LoadImage(" + chr(34) + Mid(GetImageFilename(ui.imageLoaders[0].value), FindStringReverse(GetImageFilename(ui.imageLoaders[0].value), "/") + 1, len(GetImageFilename(ui.imageLoaders[0].value))) + chr(34) + ")")
 					endif
 					inc codeLine
-					CreateOrUpdateCodeLine(codeLine, "particles = CreateParticles(512, 384)")
+					CreateOrUpdateCodeLine(codeLine, "particles = CreateParticles(" + GetEditBoxText(ui.sliders[0].editbox) + ", " + GetEditBoxText(ui.sliders[1].editbox) + ")")
 					inc codeLine
 					CreateOrUpdateCodeLine(codeLine, "")
 					inc codeLine
 					CreateOrUpdateCodeLine(codeLine, "do")
 					inc codeLine
-					CreateOrUpdateCodeLine(codeLine, "    " + "particlesAngleRange# = " + GetEditBoxText(ui.sliders[1].editbox))
+					CreateOrUpdateCodeLine(codeLine, "    " + "particlesAngleRange# = " + GetEditBoxText(ui.sliders[3].editbox))
 					inc codeLine
-					CreateOrUpdateCodeLine(codeLine, "    " + "particlesDirectionX# = " + GetEditBoxText(ui.sliders[2].editbox))
+					CreateOrUpdateCodeLine(codeLine, "    " + "particlesDirectionX# = " + GetEditBoxText(ui.sliders[4].editbox))
 					inc codeLine
-					CreateOrUpdateCodeLine(codeLine, "    " + "particlesDirectionY# = " + GetEditBoxText(ui.sliders[3].editbox))
+					CreateOrUpdateCodeLine(codeLine, "    " + "particlesDirectionY# = " + GetEditBoxText(ui.sliders[5].editbox))
 					inc codeLine
-					CreateOrUpdateCodeLine(codeLine, "    " + "particlesFrequency# = " + GetEditBoxText(ui.sliders[4].editbox))
+					CreateOrUpdateCodeLine(codeLine, "    " + "particlesFrequency# = " + GetEditBoxText(ui.sliders[6].editbox))
 					inc codeLine
-					CreateOrUpdateCodeLine(codeLine, "    " + "particlesLife# = " + GetEditBoxText(ui.sliders[5].editbox))
+					CreateOrUpdateCodeLine(codeLine, "    " + "particlesLife# = " + GetEditBoxText(ui.sliders[7].editbox))
 					inc codeLine
-					CreateOrUpdateCodeLine(codeLine, "    " + "particlesSize# = " + GetEditBoxText(ui.sliders[0].editbox))
+					CreateOrUpdateCodeLine(codeLine, "    " + "particlesRotationRangeMin# = " + GetEditBoxText(ui.sliders[9].minEditbox))
 					inc codeLine
-					CreateOrUpdateCodeLine(codeLine, "    " + "particlesStartZoneX1# = " + GetEditBoxText(ui.sliders[7].minEditbox))
+					CreateOrUpdateCodeLine(codeLine, "    " + "particlesRotationRangeMax# = " + GetEditBoxText(ui.sliders[9].maxEditbox))
 					inc codeLine
-					CreateOrUpdateCodeLine(codeLine, "    " + "particlesStartZoneX2# = " + GetEditBoxText(ui.sliders[7].maxEditbox))
+					CreateOrUpdateCodeLine(codeLine, "    " + "particlesSize# = " + GetEditBoxText(ui.sliders[2].editbox))
 					inc codeLine
-					CreateOrUpdateCodeLine(codeLine, "    " + "particlesStartZoneY1# = " + GetEditBoxText(ui.sliders[8].minEditbox))
+					CreateOrUpdateCodeLine(codeLine, "    " + "particlesStartZoneX1# = " + GetEditBoxText(ui.sliders[10].minEditbox))
 					inc codeLine
-					CreateOrUpdateCodeLine(codeLine, "    " + "particlesStartZoneY2# = " + GetEditBoxText(ui.sliders[8].maxEditbox))
+					CreateOrUpdateCodeLine(codeLine, "    " + "particlesStartZoneX2# = " + GetEditBoxText(ui.sliders[10].maxEditbox))
 					inc codeLine
-					CreateOrUpdateCodeLine(codeLine, "    " + "particlesVelocityRangeMin# = " + GetEditBoxText(ui.sliders[6].minEditbox))
+					CreateOrUpdateCodeLine(codeLine, "    " + "particlesStartZoneY1# = " + GetEditBoxText(ui.sliders[11].minEditbox))
 					inc codeLine
-					CreateOrUpdateCodeLine(codeLine, "    " + "particlesVelocityRangeMax# = " + GetEditBoxText(ui.sliders[6].maxEditbox))
+					CreateOrUpdateCodeLine(codeLine, "    " + "particlesStartZoneY2# = " + GetEditBoxText(ui.sliders[11].maxEditbox))
+					inc codeLine
+					CreateOrUpdateCodeLine(codeLine, "    " + "particlesVelocityRangeMin# = " + GetEditBoxText(ui.sliders[8].minEditbox))
+					inc codeLine
+					CreateOrUpdateCodeLine(codeLine, "    " + "particlesVelocityRangeMax# = " + GetEditBoxText(ui.sliders[8].maxEditbox))
 					inc codeLine
 					CreateOrUpdateCodeLine(codeLine, "")
 					inc codeLine
@@ -1463,6 +1837,8 @@ do
 					inc codeLine
 					CreateOrUpdateCodeLine(codeLine, "    " + "SetParticlesLife(particles, particlesLife#)")
 					inc codeLine
+					CreateOrUpdateCodeLine(codeLine, "    " + "SetParticlesRotationRange(particles, particlesRotationRangeMin#, particlesRotationRangeMax#)")
+					inc codeLine
 					CreateOrUpdateCodeLine(codeLine, "    " + "SetParticlesSize(particles, particlesSize#)")
 					inc codeLine
 					CreateOrUpdateCodeLine(codeLine, "    " + "SetParticlesStartZone(particles, particlesStartZoneX1#, particlesStartZoneY1#, particlesStartZoneX2#, particlesStartZoneY2#)")
@@ -1475,42 +1851,84 @@ do
 						CreateOrUpdateCodeLine(codeLine, "particleImage = LoadImage(" + chr(34) + Mid(GetImageFilename(ui.imageLoaders[0].value), FindStringReverse(GetImageFilename(ui.imageLoaders[0].value), "/") + 1, len(GetImageFilename(ui.imageLoaders[0].value))) + chr(34) + ")")
 					endif
 					inc codeLine
-					CreateOrUpdateCodeLine(codeLine, "particles = CreateParticles(512, 384)")
+					CreateOrUpdateCodeLine(codeLine, "particles = CreateParticles(" + GetEditBoxText(ui.sliders[0].editbox) + ", " + GetEditBoxText(ui.sliders[1].editbox) + ")")
 					inc codeLine
 					CreateOrUpdateCodeLine(codeLine, "")
 					inc codeLine
 					CreateOrUpdateCodeLine(codeLine, "do")
 					inc codeLine
-					CreateOrUpdateCodeLine(codeLine, "    " + "SetParticlesAngle(particles, " + GetEditBoxText(ui.sliders[1].editbox) + ")")
+					CreateOrUpdateCodeLine(codeLine, "    " + "SetParticlesAngle(particles, " + GetEditBoxText(ui.sliders[3].editbox) + ")")
 					inc codeLine
-					CreateOrUpdateCodeLine(codeLine, "    " + "SetParticlesDirection(particles, " + GetEditBoxText(ui.sliders[2].editbox) + ", " + GetEditBoxText(ui.sliders[3].editbox) + ")")
+					CreateOrUpdateCodeLine(codeLine, "    " + "SetParticlesDirection(particles, " + GetEditBoxText(ui.sliders[4].editbox) + ", " + GetEditBoxText(ui.sliders[5].editbox) + ")")
 					inc codeLine
-					CreateOrUpdateCodeLine(codeLine, "    " + "SetParticlesFrequency(particles, " + GetEditBoxText(ui.sliders[4].editbox) + ")")
+					CreateOrUpdateCodeLine(codeLine, "    " + "SetParticlesFrequency(particles, " + GetEditBoxText(ui.sliders[6].editbox) + ")")
 					if (ui.imageLoaders[0].value <> imgBlank)
 						inc codeLine
 						CreateOrUpdateCodeLine(codeLine, "    " + "SetParticlesImage(particles, particleImage)")
 					endif
 					inc codeLine
-					CreateOrUpdateCodeLine(codeLine, "    " + "SetParticlesLife(particles, " + GetEditBoxText(ui.sliders[5].editbox) + ")")
+					CreateOrUpdateCodeLine(codeLine, "    " + "SetParticlesLife(particles, " + GetEditBoxText(ui.sliders[7].editbox) + ")")
 					inc codeLine
-					CreateOrUpdateCodeLine(codeLine, "    " + "SetParticlesSize(particles, " + GetEditBoxText(ui.sliders[0].editbox) + ")")
+					CreateOrUpdateCodeLine(codeLine, "    " + "SetParticlesRotationRange(particles, " + GetEditBoxText(ui.sliders[9].minEditbox) + ", " + GetEditBoxText(ui.sliders[9].maxEditbox) + ")")
 					inc codeLine
-					CreateOrUpdateCodeLine(codeLine, "    " + "SetParticlesStartZone(particles, " + GetEditBoxText(ui.sliders[7].minEditbox) + ", " + GetEditBoxText(ui.sliders[8].minEditbox) + ", " + GetEditBoxText(ui.sliders[7].maxEditbox) + ", " + GetEditBoxText(ui.sliders[8].maxEditbox) + ")")
+					CreateOrUpdateCodeLine(codeLine, "    " + "SetParticlesSize(particles, " + GetEditBoxText(ui.sliders[2].editbox) + ")")
 					inc codeLine
-					CreateOrUpdateCodeLine(codeLine, "    " + "SetParticlesVelocityRange(particles, " + GetEditBoxText(ui.sliders[6].minEditbox) + ", " + GetEditBoxText(ui.sliders[6].maxEditbox) + ")")
+					CreateOrUpdateCodeLine(codeLine, "    " + "SetParticlesStartZone(particles, " + GetEditBoxText(ui.sliders[10].minEditbox) + ", " + GetEditBoxText(ui.sliders[11].minEditbox) + ", " + GetEditBoxText(ui.sliders[10].maxEditbox) + ", " + GetEditBoxText(ui.sliders[11].maxEditbox) + ")")
+					inc codeLine
+					CreateOrUpdateCodeLine(codeLine, "    " + "SetParticlesVelocityRange(particles, " + GetEditBoxText(ui.sliders[8].minEditbox) + ", " + GetEditBoxText(ui.sliders[8].maxEditbox) + ")")
 				endif
 				inc codeLine
 				CreateOrUpdateCodeLine(codeLine, "")
-				if (particlesKeyFrames.length > -1)
+				colorsCount = 0
+				forcesCount = 0
+				scalesCount = 0
+				for keyFrame = 0 to particlesKeyFrames.length
+					if (particlesKeyFrames[keyFrame].group$ = "Color") then inc colorsCount
+					if (particlesKeyFrames[keyFrame].group$ = "Force") then inc forcesCount
+					if (particlesKeyFrames[keyFrame].group$ = "Scale") then inc scalesCount
+				next
+				if (colorsCount > 0)
 					inc codeLine
 					CreateOrUpdateCodeLine(codeLine, "    " + "ClearParticlesColors(particles)")
+				endif
+				if (forcesCount > 0)
+					inc codeLine
+					CreateOrUpdateCodeLine(codeLine, "    " + "ClearParticlesForces(particles)")
+				endif
+				if (scalesCount > 0)
 					inc codeLine
 					CreateOrUpdateCodeLine(codeLine, "    " + "ClearParticlesScales(particles)")
 				endif
 				for keyFrame = 0 to particlesKeyFrames.length
 					if (particlesKeyFrames[keyFrame].group$ = "Color")
+						if (GetEditBoxText(particlesKeyFrames[keyFrame].redEditbox) = "?")
+							red$ = "random(0, 255)"
+						else
+							red$ = str(particlesKeyFrames[keyFrame].redValue#, 0)
+						endif
+						if (GetEditBoxText(particlesKeyFrames[keyFrame].greenEditbox) = "?")
+							green$ = "random(0, 255)"
+						else
+							green$ = str(particlesKeyFrames[keyFrame].greenValue#, 0)
+						endif
+						if (GetEditBoxText(particlesKeyFrames[keyFrame].blueEditbox) = "?")
+							blue$ = "random(0, 255)"
+						else
+							blue$ = str(particlesKeyFrames[keyFrame].blueValue#, 0)
+						endif
+						if (GetEditBoxText(particlesKeyFrames[keyFrame].alphaEditbox) = "?")
+							alpha$ = "random(0, 255)"
+						else
+							alpha$ = str(particlesKeyFrames[keyFrame].alphaValue#, 0)
+						endif
 						inc codeLine
-						CreateOrUpdateCodeLine(codeLine, "    " + "AddParticlesColorKeyFrame(particles, " + str(particlesKeyFrames[keyFrame].timeValue#, 2) + ", " + str(particlesKeyFrames[keyFrame].redValue#, 0) + ", " + str(particlesKeyFrames[keyFrame].greenValue#, 0) + ", " + str(particlesKeyFrames[keyFrame].blueValue#, 0) + ", " + str(particlesKeyFrames[keyFrame].alphaValue#, 0) + ")")
+						CreateOrUpdateCodeLine(codeLine, "    " + "AddParticlesColorKeyFrame(particles, " + str(particlesKeyFrames[keyFrame].timeValue#, 2) + ", " + red$ + ", " + green$ + ", " + blue$ + ", " + alpha$ + ")")
+					endif
+				next
+				for keyFrame = 0 to particlesKeyFrames.length
+					if (particlesKeyFrames[keyFrame].group$ = "Force")
+						inc codeLine
+						CreateOrUpdateCodeLine(codeLine, "    " + "AddParticlesForce(particles, " + str(particlesKeyFrames[keyFrame].timeValue#, 2) + ", " + str(particlesKeyFrames[keyFrame].endTimeValue#, 2) + ", " + str(particlesKeyFrames[keyFrame].xValue#, 2) + ", " + str(particlesKeyFrames[keyFrame].yValue#, 2) + ")")
 					endif
 				next
 				for keyFrame = 0 to particlesKeyFrames.length
