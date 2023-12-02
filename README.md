@@ -7,6 +7,7 @@ AGK Playground was created for a game jam on itch.io (https://digicodelabs.itch.
 In the version released for the game jam you can play around with 2D particles, as well as the math commands: sin and cos. Once you're happy with the configuration you've chosen you can copy and paste the code right in to your own game.
 
 Assets from: https://kenney.nl
+Icons from: https://github.com/google/material-design-icons
 
 <img width="397" alt="agk-playground-1" src="https://github.com/DigicodeLabs/AGK-Playground/assets/43001133/becb2297-a570-4806-bbcc-07a2b5d06353">
 <img width="397" alt="agk-playground-2" src="https://github.com/DigicodeLabs/AGK-Playground/assets/43001133/4631aff8-75db-4f97-b5e9-a8b2bc453be4">
