@@ -8,7 +8,7 @@ In the version released for the game jam you can play around with 2D particles, 
 
 Assets from: https://kenney.nl
 
-<img width="397" alt="agk-playground-4" src="https://github.com/DigicodeLabs/AGK-Playground/assets/43001133/4ea231e3-5b69-4339-878a-19960c31ec66">
-<img width="397" alt="agk-playground-3" src="https://github.com/DigicodeLabs/AGK-Playground/assets/43001133/ef82a498-82a7-4e8f-8c65-d1bf55cd2fb2">
-<img width="397" alt="agk-playground-2" src="https://github.com/DigicodeLabs/AGK-Playground/assets/43001133/4631aff8-75db-4f97-b5e9-a8b2bc453be4">
 <img width="397" alt="agk-playground-1" src="https://github.com/DigicodeLabs/AGK-Playground/assets/43001133/becb2297-a570-4806-bbcc-07a2b5d06353">
+<img width="397" alt="agk-playground-2" src="https://github.com/DigicodeLabs/AGK-Playground/assets/43001133/4631aff8-75db-4f97-b5e9-a8b2bc453be4">
+<img width="397" alt="agk-playground-3" src="https://github.com/DigicodeLabs/AGK-Playground/assets/43001133/ef82a498-82a7-4e8f-8c65-d1bf55cd2fb2">
+<img width="397" alt="agk-playground-4" src="https://github.com/DigicodeLabs/AGK-Playground/assets/43001133/4ea231e3-5b69-4339-878a-19960c31ec66">
